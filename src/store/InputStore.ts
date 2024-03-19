@@ -197,8 +197,6 @@ export default class InputStore {
                     this.isoformStore1.setNetworkFile(networks[0]),
                     this.isoformStore2.setNetworkFile(networks[1]),
                 ])
-                console.log("asdf")
-                // this.networks = networks;
                 this.generateAlluvialDiagram();
             }
         }

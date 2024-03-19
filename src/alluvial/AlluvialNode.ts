@@ -53,14 +53,14 @@ type Parent<T> = T extends {
 export type Ancestors<T> =
   | T
   | NonNullable<
-      | Parent<T>
-      | Parent<Parent<T>>
-      | Parent<Parent<Parent<T>>>
-      | Parent<Parent<Parent<Parent<T>>>>
-      | Parent<Parent<Parent<Parent<Parent<T>>>>>
-      | Parent<Parent<Parent<Parent<Parent<Parent<T>>>>>>
-      | Parent<Parent<Parent<Parent<Parent<Parent<Parent<T>>>>>>>
-    >;
+    | Parent<T>
+    | Parent<Parent<T>>
+    | Parent<Parent<Parent<T>>>
+    | Parent<Parent<Parent<Parent<T>>>>
+    | Parent<Parent<Parent<Parent<Parent<T>>>>>
+    | Parent<Parent<Parent<Parent<Parent<Parent<T>>>>>>
+    | Parent<Parent<Parent<Parent<Parent<Parent<Parent<T>>>>>>>
+  >;
 
 type Child<T> = T extends {
   children: Array<infer ChildType>;
@@ -84,7 +84,7 @@ export default abstract class AlluvialNode<
 > extends Layout {
   abstract readonly depth: Depth;
 
-  flow: number = 0;
+  _flow: number = 0;
 
   children: ChildType[] = [];
 
@@ -94,6 +94,14 @@ export default abstract class AlluvialNode<
     public readonly id: string = ""
   ) {
     super();
+  }
+
+  get flow() {
+    return this._flow;
+  }
+
+  set flow(value: number) {
+    this._flow = value;
   }
 
   get isFirstChild() {

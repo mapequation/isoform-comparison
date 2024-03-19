@@ -28,9 +28,7 @@ export default function Logo({ showVersion = false, long = false }) {
             {long && <span style={{ color }}> Generator</span>}
           </span>
           {showVersion && (
-            <span style={{ color }}>
-              {" v" + process.env.REACT_APP_VERSION}
-            </span>
+            <span style={{ color }}>{" v" + __APP_VERSION__}</span>
           )}
         </div>
       </HStack>

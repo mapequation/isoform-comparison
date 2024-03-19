@@ -68,6 +68,9 @@ export default observer(function App() {
     if (!store.editMode && key === "l") {
       openLoad();
     }
+    if (!store.editMode && key === "e") {
+      store.input.loadExample(store.input.exampleData[0]);
+    }
   });
 
   return (
