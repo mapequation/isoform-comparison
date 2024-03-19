@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { observer } from "mobx-react";
 import { useContext, useEffect, useRef } from "react";
 import useEventListener from "../../hooks/useEventListener";
-import useWindowSize from "../../hooks/useWindowSize";
 import { StoreContext } from "../../store";
 import highlightColor from "../../utils/highlight-color";
 import { drawerWidth } from "../App";
@@ -14,9 +13,14 @@ import SelectedModule from "./SelectedModule";
 
 const zoom = d3.zoom<SVGSVGElement, unknown>().scaleExtent([0.1, 1000]);
 
-export default observer(function Diagram() {
+export default observer(function Diagram({
+  width,
+  height,
+}: {
+  width: number;
+  height: number;
+}) {
   const ref = useRef<SVGSVGElement>(null);
-  const { width, height } = useWindowSize();
   const store = useContext(StoreContext);
   const { diagram, defaultHighlightColor, highlightColors, updateFlag } = store;
   const fillColor = highlightColor(defaultHighlightColor, highlightColors);
@@ -82,7 +86,13 @@ export default observer(function Diagram() {
       <defs>
         <DropShadows maxLevel={maxDropShadowModuleLevel} />
       </defs>
-      <rect className="background" width={width} height={height} fill="#fff" />
+      <rect
+        className="background"
+        width={width}
+        height={height}
+        fill="#fff"
+        stroke="#ccc"
+      />
       <g id="zoomable">
         <motion.g
           id="translate-center"

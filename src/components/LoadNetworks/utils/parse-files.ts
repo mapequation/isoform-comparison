@@ -10,7 +10,7 @@ import type { Format, NetworkFile } from "../types";
 import { calcStatistics } from "./calc-statistics";
 import { setIdentifiers } from "./set-identifiers";
 
-type ErrorType = {
+export type ErrorType = {
   file: File;
   errors: { code: string; message: string }[];
 };
@@ -24,7 +24,6 @@ function createError(file: File, code: string, message: string): ErrorType {
 
 export async function parseAcceptedFiles(
   acceptedFiles: File[],
-  currentFiles: NetworkFile[],
   acceptedFormats: readonly string[],
   identifier: Identifier
 ): Promise<[NetworkFile[], ErrorType[]]> {

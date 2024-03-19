@@ -1,29 +1,28 @@
 .dropzone {
-    border: 1px dashed #999;
-    border-radius: 5px;
+  border: 1px dashed #999;
+  border-radius: 5px;
 }
 
 .parent {
-    display: flex;
-    flex-wrap: nowrap;
-    height: 300px;
-    overflow-x: auto;
-    padding: 1em 1.5em;
-    margin: 0;
-    gap: 1rem;
-    --box-width: 150px;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 1em 1.5em;
+  margin: 0;
+  gap: 1rem;
+  --box-width: 150px;
 }
 
 .parent .child {
-    flex: 0 0 var(--box-width);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
-    border-radius: 3px;
-    overflow: hidden;
-    list-style-type: none;
-    cursor: grab;
-    position: relative;
+  flex: 0 0 var(--box-width);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  overflow: hidden;
+  list-style-type: none;
+  cursor: grab;
+  position: relative;
 }
 
 .parent .child:active {
-    cursor: grabbing;
+  cursor: grabbing;
 }

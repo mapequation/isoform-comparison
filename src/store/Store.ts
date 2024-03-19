@@ -21,10 +21,11 @@ import type { Histogram } from "../components/Sidebar/Metadata/Real";
 import TreePath from "../utils/TreePath";
 import BipartiteGraph from "./BipartiteGraph";
 import { COLOR_SCHEMES, ColorScheme, SchemeName } from "./schemes";
+import InputStore from "./InputStore";
 
 export class Store {
+  input: InputStore;
   diagram = new Diagram();
-
   files: NetworkFile[] = [];
   identifier: Identifier = "id";
 
@@ -42,8 +43,8 @@ export class Store {
   streamlineOpacity: number = 0.8;
   flowThreshold: number = 5e-3;
 
-  selectedScheme: ColorScheme = COLOR_SCHEMES["C3 Sinebow"];
-  selectedSchemeName: SchemeName = "C3 Sinebow";
+  selectedScheme: ColorScheme = COLOR_SCHEMES["C3 Turbo"];
+  selectedSchemeName: SchemeName = "C3 Turbo";
 
   defaultHighlightColor: string = "#b6b69f";
   highlightColors: string[] = [...this.selectedScheme];
@@ -113,6 +114,7 @@ export class Store {
       editMode: observable,
       showBipartiteNodes: observable,
     });
+    this.input = new InputStore(this);
   }
 
   private checkColors(networks: any[]) {
@@ -161,6 +163,12 @@ export class Store {
     if (selectLargest) {
       this.setSelectedModule(this.diagram.children[0]?.children[0]);
     }
+
+    this.colorNodesInModulesInAllNetworks(undefined);
+
+    setTimeout(() => {
+      this.setSelectedModule(null);
+    }, 100)
 
     console.timeEnd("Store.setNetworks");
   });
@@ -597,7 +605,7 @@ export class Store {
       } else {
         const color =
           this.selectedScheme[
-            moduleIdColorMap.size % this.selectedScheme.length
+          moduleIdColorMap.size % this.selectedScheme.length
           ];
         moduleIdColorMap.set(module.moduleId, color);
         const highlightIndex = this.getHighlightIndex(color);
@@ -658,7 +666,7 @@ export class Store {
             if (!layerIdColorMap.has(node.layerId)) {
               let color =
                 this.selectedScheme[
-                  layerIdColorMap.size % this.selectedScheme.length
+                layerIdColorMap.size % this.selectedScheme.length
                 ];
               layerIdColorMap.set(node.layerId, color);
             }
@@ -684,7 +692,7 @@ export class Store {
             if (!physicalIdColorMap.has(node.nodeId)) {
               let color =
                 this.selectedScheme[
-                  physicalIdColorMap.size % this.selectedScheme.length
+                physicalIdColorMap.size % this.selectedScheme.length
                 ];
               physicalIdColorMap.set(node.nodeId, color);
             }
@@ -831,6 +839,9 @@ export class Store {
   }
 
   updateLayout() {
+    if (this.numNetworks === 0) {
+      return;
+    }
     this.diagram.calcFlow();
     this.diagram.updateLayout(this);
     this.toggleUpdate();

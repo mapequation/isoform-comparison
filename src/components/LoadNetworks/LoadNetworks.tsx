@@ -64,7 +64,6 @@ export default observer(function LoadNetworks({ onClose }: Props) {
 
     const [newFiles, errors] = await parseAcceptedFiles(
       acceptedFiles,
-      files,
       acceptedFormats,
       store.identifier
     );
