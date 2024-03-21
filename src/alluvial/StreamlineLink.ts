@@ -44,7 +44,7 @@ export default class StreamlineLink {
   }
 
   get x0() {
-    return this.left?.x + this.left?.width ?? 0;
+    return this.left?.x + this.left?.width || 0;
   }
 
   get x1() {
