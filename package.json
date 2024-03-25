@@ -1,6 +1,6 @@
 {
   "name": "isoform",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "homepage": "/isoform",
   "scripts": {
@@ -10,8 +10,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage --watch=false",
     "release": "standard-version",
-    "deployclean": "ssh mapequation \"rm -rf /var/www/isoform/static/*\"",
-    "predeploy": "npm run build && npm run deployclean",
+    "predeploy": "npm run build",
     "deploy": "rsync -avzh dist/* mapequation:/var/www/isoform"
   },
   "eslintConfig": {
@@ -56,6 +55,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
+    "react-force-graph-3d": "^1.24.2",
     "react-icons": "^5.0.1",
     "recharts": "^2.12.2",
     "title-case": "^4.3.1",

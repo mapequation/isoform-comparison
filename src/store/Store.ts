@@ -27,7 +27,7 @@ export class Store {
   input: InputStore;
   diagram = new Diagram();
   files: NetworkFile[] = [];
-  identifier: Identifier = "id";
+  identifier: Identifier = "name";
 
   // hack to force updates when we call updateLayout
   updateFlag = true;

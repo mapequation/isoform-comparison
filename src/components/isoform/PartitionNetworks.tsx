@@ -14,44 +14,36 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  IconButton,
+  Spacer,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  SliderMark,
 } from "@chakra-ui/react";
-import { useContext, useState, useId } from "react";
+import { useContext, useId } from "react";
 import { observer } from "mobx-react";
 import { StoreContext } from "../../store";
 import { motion } from "framer-motion";
-import {
-  InfomapToggleButton,
-  TruncatedFilename,
-} from "../LoadNetworks/Item/components";
-import { NetworkFile } from "../LoadNetworks";
+import { TruncatedFilename } from "../LoadNetworks/Item/components";
 import humanFileSize from "../../utils/human-file-size";
-import { useInfomap } from "@mapequation/infomap-react";
-import { LoadContext } from "../LoadNetworks/context";
-import { calcStatistics, setIdentifiers } from "../LoadNetworks/utils";
-import { parseTree } from "@mapequation/infomap-parser";
-import { useError } from "../../hooks/useError";
-import NetworkInfo from "../LoadNetworks/Item/NetworkInfo";
-import { IoArrowRedo, IoArrowUndo } from "react-icons/io5";
 import IsoformStore from "../../store/IsoformStore";
+import Graph from "./Graph";
+import { PdbProgress } from "./Progress";
+import NetworkInfo from "./NetworkInfo";
 
 const InfomapItem = observer(
-  ({
-    disabled,
-    numTrials,
-    setNumTrials,
-    twoLevel,
-    setTwoLevel,
-    run,
-  }: {
-    disabled: boolean;
-    numTrials: number;
-    setNumTrials: (numTrials: number) => void;
-    twoLevel: boolean;
-    setTwoLevel: (twoLevel: boolean) => void;
-    run: () => void;
-  }) => {
-    const id = useId();
+  ({ isoform, pdb }: { isoform: IsoformStore; pdb?: boolean }) => {
+    const id = `${isoform.isoID}`;
+
+    const store = pdb ? isoform.pdb : isoform;
+
+    const disabled = store.infomap.isRunning;
+    const numTrials = store.infomapArgs.numTrials ?? 10;
+    const setNumTrials = (numTrials: number) => store.setArgs({ numTrials });
+    const twoLevel = store.infomapArgs.twoLevel ?? false;
+    const setTwoLevel = (value: boolean) => store.setArgs({ twoLevel: value });
+    const run = () => store.runInfomap();
 
     return (
       <motion.div
@@ -97,7 +89,7 @@ const InfomapItem = observer(
             type="submit"
             onClick={run}
           >
-            Run Infomap
+            {isoform.haveModules ? "Re-run Infomap" : "Run Infomap"}
           </Button>
         </FormControl>
       </motion.div>
@@ -108,19 +100,20 @@ const InfomapItem = observer(
 const NetworkItem = observer(({ isoform }: { isoform: IsoformStore }) => {
   // const onError = useError();
 
-  const [showInfomap, setShowInfomap] = useState(!isoform.haveModules);
-  const showInfomapButton =
-    isoform.haveModules && isoform.netFile && !isoform.netFile.isExpanded;
-
-  if (!isoform.netFile) {
+  // console.log("!!! NetworkItem pdb netFile:", isoform.pdb.netFile);
+  if (!isoform.pdb.netFile) {
     return null;
   }
 
-  const file = isoform.netFile;
+  const file = isoform.pdb.netFile;
 
   return (
     <Box maxW="100%" h="100%" pos="relative" bg="transparent">
-      <Box p={2}>
+      <Heading size="sm">Isoform {isoform.isoID}</Heading>
+      <Box>
+        <Graph isoform={isoform} />
+      </Box>
+      <Box>
         <Box
           bg="gray.50"
           fontSize="sm"
@@ -134,22 +127,11 @@ const NetworkItem = observer(({ isoform }: { isoform: IsoformStore }) => {
 
           {file.size > 0 && <Text>{humanFileSize(file.size)}</Text>}
 
-          {file.network && (
-            <InfomapItem
-              disabled={isoform.infomap.isRunning}
-              numTrials={isoform.infomapArgs.numTrials ?? 10}
-              setNumTrials={(numTrials) => isoform.setArgs({ numTrials })}
-              twoLevel={isoform.infomapArgs.twoLevel ?? false}
-              setTwoLevel={(value) => isoform.setArgs({ twoLevel: value })}
-              run={() => isoform.runInfomap()}
-            />
-          )}
-          <NetworkInfo file={file} />
+          <InfomapItem isoform={isoform} pdb />
+          <NetworkInfo isoform={isoform} />
         </Box>
 
-        {isoform.infomap.isRunning && (
-          <Progress value={isoform.infomap.progress} size="xs" mb={-2} mt={1} />
-        )}
+        <PdbProgress isoform={isoform} />
       </Box>
     </Box>
   );
@@ -170,10 +152,28 @@ export default observer(function PartitionNetworks() {
         </Text>
       </Box>
 
-      <Flex width="1280px" justify="space-between">
-        {store.input.isoforms.map((isoform) => (
-          <NetworkItem key={isoform.isoID} isoform={isoform} />
-        ))}
+      <Box mt={4}>
+        <Box>Link distance threshold: {store.input.linkDistanceThreshold}</Box>
+        <Slider
+          width={400}
+          aria-label="link-threshold"
+          value={store.input.linkDistanceThreshold}
+          onChange={store.input.setLinkDistanceThreshold}
+          step={0.1}
+          min={0.1}
+          max={50}
+        >
+          <SliderTrack>
+            <SliderFilledTrack />
+          </SliderTrack>
+          <SliderThumb />
+        </Slider>
+      </Box>
+
+      <Flex justify="space-between" mt={10}>
+        <NetworkItem isoform={store.input.isoformStore1} />
+        <Spacer width={20} />
+        <NetworkItem isoform={store.input.isoformStore2} />
       </Flex>
     </Flex>
   );

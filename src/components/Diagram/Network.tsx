@@ -40,7 +40,10 @@ const Network = observer(function Network({
         >
           <motion.text
             className="name"
-            animate={{ fontSize: networkFontSize, dy: networkFontSize }}
+            animate={{
+              fontSize: networkFontSize ?? 10,
+              dy: networkFontSize ?? 0,
+            }}
             transition={transition}
             textAnchor="middle"
             data-x={namePosition.x}

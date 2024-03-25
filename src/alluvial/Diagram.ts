@@ -1,5 +1,6 @@
 import type { NetworkFile } from "../components/LoadNetworks";
 import differenceIndex from "../utils/difference-index";
+//@ts-ignore
 import Tree from "../utils/Tree";
 import AlluvialNodeBase from "./AlluvialNode";
 import Branch from "./Branch";
@@ -215,8 +216,8 @@ export default class Diagram extends AlluvialNodeBase<Network> {
           const margin =
             i + 1 < nodes.length
               ? 2 **
-                (marginExponent -
-                  2 * differenceIndex(node.path, nodes[i + 1].path))
+              (marginExponent -
+                2 * differenceIndex(node.path, nodes[i + 1].path))
               : 0;
           const nodeSize = getNodeSize(node);
           moduleHeight = nodeSize * height;

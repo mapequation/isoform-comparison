@@ -1,5 +1,6 @@
 import { LightMode, Tooltip as CkTooltip } from "@chakra-ui/react";
 import React, { PropsWithChildren } from "react";
+//@ts-ignore
 import ModuleTooltip from "./ModuleTooltip";
 
 export default function Tooltip({

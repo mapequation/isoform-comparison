@@ -8,6 +8,9 @@ import IsoformStore from "./IsoformStore";
 
 type AcceptedFormats = "fasta" | "pdb" | "net";
 
+
+export type ErrorItem = { title: string, description: string }
+
 export const getExtension = (file: File) => {
     return file.name.split(".").pop()!;
 }
@@ -34,9 +37,10 @@ export default class InputStore {
     isoformStore2: IsoformStore;
 
     // networks: NetworkFile[] = [];
+    linkDistanceThreshold = 7;
 
     isLoadingFiles = false;
-    errors: { title: string, description: string }[] = [];
+    errors: ErrorItem[] = [];
 
     exampleData: ExampleItem[] = [
         {
@@ -130,6 +134,7 @@ export default class InputStore {
         this.rootStore = rootStore;
         makeObservable(this, {
             inputFiles: observable.ref,
+            linkDistanceThreshold: observable,
             isLoadingFiles: observable,
             canGenerateAlluvial: computed,
             networks: computed,
@@ -156,6 +161,11 @@ export default class InputStore {
     getFiles(extension: AcceptedFormats) {
         return this.inputFiles.filter(item => item.format === extension).map(item => item.file);
     }
+
+    setLinkDistanceThreshold = action((value: number) => {
+        this.linkDistanceThreshold = value;
+        this.isoforms.forEach(isoform => isoform.pdb.setLinkDistanceThreshold(value));
+    })
 
     loadFiles = action(async (files: File[]) => {
         console.time("InputStore.loadFiles")
@@ -198,20 +208,34 @@ export default class InputStore {
                     this.isoformStore2.setNetworkFile(networks[1]),
                 ])
                 this.generateAlluvialDiagram();
+                console.log("First node:", networks[0].nodes[0])
             }
         }
     })
 
     loadExample = action(async (item: ExampleItem) => {
-        const files = await Promise.all(
-            [item.isoform1.net, item.isoform2.net].map(async (url) => {
-                const resp = await fetch(encodeURI(`/isoform/data/${url}`));
-                const text = await resp.text();
-                const file = new File([text], url, { type: "text/plain" });
-                return file;
-            })
-        );
-        await this.loadFiles(files);
+
+        const toFile = async (url: string) => {
+            const resp = await fetch(encodeURI(`/isoform/data/${url}`));
+            const text = await resp.text();
+            const file = new File([text], url, { type: "text/plain" });
+            return file;
+        }
+
+        const files1 = await Promise.all([...item.isoform1.pdb, item.isoform1.net].map(toFile))
+        const files2 = await Promise.all([...item.isoform2.pdb, item.isoform2.net].map(toFile))
+        const fileCommon = await toFile(item.alignment);
+
+        await Promise.all([
+            this.isoformStore1.loadFiles(files1),
+            this.isoformStore2.loadFiles(files2),
+            this.loadAlignment(fileCommon),
+        ])
+    })
+
+    loadAlignment = action(async (file: File) => {
+        console.log(`Load alignment from file '${file.name}'...`);
+
     })
 
     generateAlluvialDiagram = action(async () => {
