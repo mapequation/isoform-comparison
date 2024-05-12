@@ -44,6 +44,9 @@ const aaColorsClustal = [
 
 const aaColorMap = new Map(aaColorsClustal.flatMap(item => item.residues.map(r => [r, item.color])))
 
+
+export const getAAColor = (code: string) => aaColorMap.get(code)!;
+
 type Coord = [number, number, number];
 
 type PdbItem = {
@@ -66,6 +69,7 @@ export type IsoformLink = {
     source: string;
     target: string;
     id?: string;
+    weight: number;
 }
 
 export type IsoformNetwork = {
@@ -212,7 +216,12 @@ export default class PdbStore {
         runInAction(() => {
             this.numDatasets = this.numDatasets + 1;
         })
-        if (this.numDatasets === 1) {
+    }
+
+    parsePdbFiles = async (files: File[], runInfomap = true) => {
+        await Promise.all(files.map(file => this.parsePdbFile(file)));
+
+        if (runInfomap && this.numDatasets > 0) {
             this.generateNetwork();
             await this.runInfomap();
         }
@@ -220,11 +229,12 @@ export default class PdbStore {
 
     generateNetwork = action(() => {
         const nodes: IsoformNode[] = [];
+        const { alignmentMap } = this.isoformStore;
         this.data.forEach(item => {
             const [fx, fy, fz] = item.coords[0];
             nodes.push({
                 id: `${item.pos}`,
-                label: item.aa,
+                label: alignmentMap?.get(item.pos) ?? `${item.pos}_${item.aa}`,
                 color: aaColorMap.get(item.aa)!,
                 fx, fy, fz,
             })
@@ -243,9 +253,15 @@ export default class PdbStore {
             const p1 = items[i];
             for (let j = i + 1; j < items.length; ++j) {
                 const p2 = items[j];
-                const d2 = calcDistanceSquared(p1.coords[0], p2.coords[0]);
-                if (d2 <= threshold) {
-                    links.push({ source: `${p1.pos}`, target: `${p2.pos}` })
+                let weight = 0;
+                for (let k = 0; k < this.numDatasets; ++k) {
+                    const d2 = calcDistanceSquared(p1.coords[0], p2.coords[0]);
+                    if (d2 <= threshold) {
+                        weight += 1
+                    }
+                }
+                if (weight > 0) {
+                    links.push({ source: `${p1.pos}`, target: `${p2.pos}`, weight: weight / this.numDatasets })
                 }
             }
         }
@@ -297,7 +313,7 @@ export default class PdbStore {
             //@ts-ignore
             // console.log(`${getId(link.source)} ${getId(link.target)}`, link);
             //@ts-ignore
-            lines.push(`${getId(link.source)} ${getId(link.target)}`);
+            lines.push(`${getId(link.source)} ${getId(link.target)} ${link.weight}`);
         })
         // console.log(lines)
         return lines.join('\n');
@@ -331,6 +347,8 @@ export default class PdbStore {
         })
 
         const modules = new Map<string, number>();
+
+        console.log(`Infomap result for '${this.name}':`, netFile);
 
         netFile.nodes.forEach((node) => {
             const path = Array.isArray(node.path) ? node.path : node.path?.split(":") ?? [];

@@ -9,6 +9,7 @@ import { calcStatistics } from "../components/LoadNetworks/utils"
 import PdbStore from "./PdbStore";
 import { ErrorItem } from "./InputStore";
 import { runInfomap } from "../utils/infomap";
+import { Sequence } from "../utils/sequence-parser";
 
 const aaMap = new Map([
     ["ALA", "A"], ["ARG", "R"], ["ASN", "N"], ["ASP", "D"], ["CYS", "C"], ["GLN", "Q"], ["GLU", "E"], ["GLY", "G"], ["HIS", "H"],
@@ -107,14 +108,36 @@ export default class IsoformStore {
         this.isoID = isoformID;
         this._name = `${isoformID}`;
         makeObservable(this, {
+            _name: observable,
+            name: computed,
             isLoading: observable,
             netFile: observable.ref,
             infomap: observable,
             infomapArgs: observable,
             haveModules: computed,
             network: observable.ref,
+            sequence: observable.ref,
+            alignedSequence: observable,
+            alignmentMap: observable.ref,
         })
     }
+
+    sequence: Sequence | null = null;
+    setSequence = action((seq: Sequence) => {
+        this.sequence = seq;
+    })
+
+    alignedSequence: string = "";
+    setAlignedSequence = action((code: string) => {
+        this.alignedSequence = code;
+    })
+
+    alignmentMap: Map<number, string> | null = null;
+    setAlignmentMap = action((alignmentMap: Map<number, string>) => {
+        this.alignmentMap = alignmentMap;
+        this.pdb.generateNetwork();
+    })
+
 
     clear = action(() => {
         this.isLoading = false;
@@ -151,23 +174,12 @@ export default class IsoformStore {
     get name() {
         return this._name;
     }
+    setName = action((name: string) => {
+        this._name = name;
+    })
 
     get haveModules() {
-        return this.infomap.finished;
-    }
-
-    get networkNodes() {
-        if (this.netFile === null) {
-            return [];
-        }
-        return this.netFile.nodes;
-    }
-
-    get networkLinks() {
-        if (this.netFile === null) {
-            return [];
-        }
-
+        return this.pdb.infomap.finished;
     }
 
     getFiles(extension: AcceptedFormats) {
@@ -221,10 +233,9 @@ export default class IsoformStore {
         }
 
         const pdbFiles = this.getFiles("pdb");
-        if (pdbFiles.length > 0) {
-            await this.pdb.parsePdbFile(pdbFiles[0]);
-        }
+        await this.pdb.parsePdbFiles(pdbFiles);
     })
+
 
     setNetworkFile = action(async (file: NetworkFile) => {
         this.netFile = file;
@@ -245,7 +256,13 @@ export default class IsoformStore {
             return;
         }
 
-        const nodes = this.netFile.nodes.map(({ id, name, path }) => ({ id: `${id}`, label: name!, path: typeof path === 'string' ? path : path.join(':') }));
+        const nodes = this.netFile.nodes.map(({ id, name, path }) => {
+            return {
+                id: `${id}`,
+                label: name!,
+                path: typeof path === 'string' ? path : path.join(':')
+            };
+        });
 
         const edgeHeading = "*Edges"
         const lines = this.netFile.network?.split('\n');

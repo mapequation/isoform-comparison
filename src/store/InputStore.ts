@@ -5,6 +5,8 @@ import { NetworkFile } from "../components/LoadNetworks";
 import { parse, parseTree } from "@mapequation/infomap-parser";
 import Infomap from "@mapequation/infomap";
 import IsoformStore from "./IsoformStore";
+import { isFasta, parseFasta } from "../utils/sequence-parser";
+import BioMSA from "biomsa";
 
 type AcceptedFormats = "fasta" | "pdb" | "net";
 
@@ -24,7 +26,7 @@ type ExampleItem = {
     id: string;
     isoform1: ExampleIsoformItem;
     isoform2: ExampleIsoformItem;
-    alignment: string;
+    sequences: string;
 }
 
 export default class InputStore {
@@ -67,7 +69,7 @@ export default class InputStore {
                     'AT1G14150.1_aa/relaxed_model_5_pred_0.pdb',
                 ]
             },
-            alignment: 'AT1G14150.1_vs_AT1G14150_c1.fasta'
+            sequences: 'AT1G14150.1_vs_AT1G14150_c1.fasta'
         },
         {
             id: 'AT2G47450',
@@ -93,7 +95,7 @@ export default class InputStore {
                     'AT2G47450_s1/relaxed_model_5_pred_0.pdb',
                 ]
             },
-            alignment: 'AT2G47450_P1_vs_AT2G47450_s1.fasta'
+            sequences: 'AT2G47450_P1_vs_AT2G47450_s1.fasta'
         },
         {
             id: 'AT5G24120',
@@ -119,7 +121,7 @@ export default class InputStore {
                     'AT5G24120_c2_aa/relaxed_model_5_pred_0.pdb',
                 ]
             },
-            alignment: 'AT5G24120_P1_vs_AT5G24120_c2.fasta'
+            sequences: 'AT5G24120_P1_vs_AT5G24120_c2.fasta'
         },
     ];
 
@@ -138,6 +140,7 @@ export default class InputStore {
             isLoadingFiles: observable,
             canGenerateAlluvial: computed,
             networks: computed,
+            alignment: computed,
             infomap: observable,
         })
         this.isoformStore1 = new IsoformStore(this, 1);
@@ -150,8 +153,13 @@ export default class InputStore {
         return [this.isoformStore1, this.isoformStore2];
     }
 
+    get alignment() {
+        return this.isoforms.map(isoform => ({ name: isoform.name, sequence: isoform.alignedSequence }));
+    }
+
     get networks() {
-        return this.isoforms.map(isoform => isoform.netFile);
+        // return this.isoforms.map(isoform => isoform.netFile);
+        return this.isoforms.map(isoform => isoform.pdb.netFile);
     }
 
     get canGenerateAlluvial() {
@@ -222,20 +230,95 @@ export default class InputStore {
             return file;
         }
 
-        const files1 = await Promise.all([...item.isoform1.pdb, item.isoform1.net].map(toFile))
-        const files2 = await Promise.all([...item.isoform2.pdb, item.isoform2.net].map(toFile))
-        const fileCommon = await toFile(item.alignment);
+        // const files1 = await Promise.all([...item.isoform1.pdb, item.isoform1.net].map(toFile))
+        // const files2 = await Promise.all([...item.isoform2.pdb, item.isoform2.net].map(toFile))
+        const files1 = await Promise.all(item.isoform1.pdb.map(toFile))
+        const files2 = await Promise.all(item.isoform2.pdb.map(toFile))
+        const fileCommon = await toFile(item.sequences);
+
+        this.isoformStore1.setName(item.isoform1.id);
+        this.isoformStore2.setName(item.isoform2.id);
 
         await Promise.all([
             this.isoformStore1.loadFiles(files1),
             this.isoformStore2.loadFiles(files2),
-            this.loadAlignment(fileCommon),
+            this.loadSequences(fileCommon),
         ])
     })
 
-    loadAlignment = action(async (file: File) => {
+    loadSequences = action(async (file: File) => {
         console.log(`Load alignment from file '${file.name}'...`);
 
+        const content = await file.text();
+        const lines = content.split("\n");
+        if (!isFasta(lines)) {
+            throw new Error(`Could not parse '${file.name}' as a fasta file.`);
+        }
+        const sequences = parseFasta(lines);
+        console.log("Parsed sequences:", sequences);
+
+        const isoformsByName = new Map(this.isoforms.map(isoform => [isoform.name, isoform]));
+        for (let seq of sequences) {
+            const isoform = isoformsByName.get(seq.taxon);
+            if (isoform === undefined) {
+                this.errors.push({ title: `Sequence id '${seq.taxon}' not recognized among loaded isoforms.`, description: `Sequence id should match one of '${Array.from(isoformsByName.keys()).join(', ')}'.` })
+            } else {
+                isoform.setSequence(seq);
+            }
+        }
+
+        await this.generateAlignment();
+
+        this.generateAlignedNetworks();
+
+    })
+
+    generateAlignment = action(async () => {
+        console.log("Calculate alignment...")
+        //TODO: Check and handle missing sequence
+        const sequences = this.isoforms.map(iso => iso.sequence!.code)
+        const alignment = await BioMSA.align(sequences);
+        for (let i = 0; i < this.isoforms.length; ++i) {
+            this.isoforms[i].setAlignedSequence(alignment[i])
+        }
+    })
+
+    generateAlignedNetworks = action(() => {
+        const { alignment } = this;
+        const N = alignment[0].sequence.length;
+        if (N === 0) {
+            return;
+        }
+        const sequences = alignment.map(item => item.sequence);
+        const [s1, s2] = sequences;
+        const s1Map: Map<number, string> = new Map();
+        const s2Map: Map<number, string> = new Map();
+        let pos1 = 1;
+        let pos2 = 1;
+        for (let i = 0; i < N; ++i) {
+            const site = i + 1;
+            const c1 = s1.charAt(i);
+            const c2 = s2.charAt(i);
+            if (c1 === c2) {
+                s1Map.set(pos1, `${site}_${c1}_C`);
+                s2Map.set(pos2, `${site}_${c1}_C`);
+                ++pos1;
+                ++pos2;
+            }
+            else {
+                s1Map.set(pos1, `${site}_${c1}_S`);
+                s2Map.set(pos2, `${site}_${c2}_S`);
+
+                if (c1 !== '-') {
+                    ++pos1;
+                }
+                if (c2 !== '-') {
+                    ++pos2;
+                }
+            }
+        }
+        this.isoformStore1.setAlignmentMap(s1Map);
+        this.isoformStore2.setAlignmentMap(s2Map);
     })
 
     generateAlluvialDiagram = action(async () => {

@@ -53,7 +53,7 @@ export class Store {
   moduleSize: ModuleSize = "flow";
   sortModulesBy: ModuleOrder = "flow";
 
-  showModuleId: boolean = false;
+  showModuleId: boolean = true;
   showModuleNames: boolean = true;
   multilineModuleNames: boolean = true;
   showNetworkNames: boolean = true;

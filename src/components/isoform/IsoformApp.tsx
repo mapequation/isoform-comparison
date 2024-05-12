@@ -1,4 +1,4 @@
-import { Flex, Heading, Text } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text } from "@chakra-ui/react";
 import { observer } from "mobx-react";
 import { useContext, useState } from "react";
 import { StoreContext } from "../../store";
@@ -9,6 +9,7 @@ import PartitionNetworks from "./PartitionNetworks";
 import InputTextArea from "./InputTextArea";
 import useEventListener from "../../hooks/useEventListener";
 import IsoformAlluvialDiagram from "./IsoformAlluvialDiagram";
+import SequenceView from "./SequenceView";
 
 export default observer(function IsoformApp() {
   const store = useContext(StoreContext);
@@ -50,7 +51,17 @@ export default observer(function IsoformApp() {
               onLoadContent={() => {}}
               mt="20px"
             />
+
+            {store.input.isoformStore1.sequence && (
+              <Box mt={6}>
+                <Heading as="h4" size="sm">
+                  {store.input.isoformStore1.sequence.taxon}
+                </Heading>
+                <SequenceView code={store.input.isoformStore1.sequence.code} />
+              </Box>
+            )}
           </Flex>
+
           <Flex direction="column" mx={4}>
             <Heading as="h3" size="sm" mb={2}>
               &nbsp;
@@ -78,6 +89,15 @@ export default observer(function IsoformApp() {
               onLoadContent={() => {}}
               mt="20px"
             />
+
+            {store.input.isoformStore2.sequence && (
+              <Box mt={6}>
+                <Heading as="h4" size="sm">
+                  {store.input.isoformStore2.sequence.taxon}
+                </Heading>
+                <SequenceView code={store.input.isoformStore2.sequence.code} />
+              </Box>
+            )}
           </Flex>
         </Flex>
       </Flex>

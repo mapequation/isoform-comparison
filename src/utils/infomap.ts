@@ -16,6 +16,7 @@ type RunInfomapData = {
 
 export async function runInfomap(data: RunInfomapData): Promise<NetworkFile> {
     const infomap = new Infomap();
+    console.time(`Infomap on '${data.filename}'`);
 
     const { onProgress, onError } = data;
 
@@ -52,5 +53,6 @@ export async function runInfomap(data: RunInfomapData): Promise<NetworkFile> {
     newFile.twoLevel = data.args?.twoLevel;
     newFile.numTrials = data.args?.numTrials;
 
+    console.timeEnd(`Infomap on '${data.filename}'`);
     return newFile;
 }

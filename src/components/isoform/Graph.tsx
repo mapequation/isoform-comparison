@@ -50,7 +50,7 @@ export default observer(function GraphComponent({
         showNavInfo={false}
         // nodeLabel="label"
         nodeLabel={(node) =>
-          `<span style="color: #333333">${node.id}_${node.label}</span>`
+          `<span style="color: #333333">${node.label}</span>`
         }
         nodeRelSize={1}
         backgroundColor="#ffffff"
