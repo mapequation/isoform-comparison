@@ -184,20 +184,42 @@ export default class PdbStore {
      * ATOM      5  CA  MET A   1     -28.333  28.626  28.646  1.00 42.15           C  
      *                  aa      pos   x        y       z
      * 
+     * ATOM  15405  CA  MET A1000     -62.658  29.837  48.709  1.00 91.15           C  
+     * 
      * @param file: File The pdb file.
      */
     parsePdbFile = async (file: File) => {
         const content = await file.text();
         const lines = content.split("\n");
-        for (const line of lines) {
-            const items = line.split(/\s+/);
-            if (items[0] !== "ATOM" || items[2] !== "CA") continue;
+        const re = /^ATOM\s+\d+\s+\w+\s+(?<aa>\w+)\s+\w\s*(?<pos>\d+)\s+(?<x>-?\d+\.\d+)\s+(?<y>-?\d+\.\d+)\s+(?<z>-?\d+\.\d+)\s+/;
+        for (let i = 0; i < lines.length; ++i) {
+            const line = lines[i];
+            if (line.substring(0, 4) !== "ATOM") {
+                continue;
+            }
 
-            const aa = aaMap.get(items[3])!;
-            const pos = Number(items[5])
-            const x = Number(items[6]);
-            const y = Number(items[7]);
-            const z = Number(items[8]);
+            const match = re.exec(line);
+            if (match === null || match.groups === undefined) {
+                throw Error(`Line ${i + 1} (${line}) of '${file.name}' doesn't match expected pattern.`);
+            }
+            const aa = aaMap.get(match.groups.aa)!;
+            const pos = Number(match.groups.pos)
+            const x = Number(match.groups.x);
+            const y = Number(match.groups.y);
+            const z = Number(match.groups.z);
+
+            // const items = line.split(/\s+/);
+            // if (items[0] !== "ATOM" || items[2] !== "CA") continue;
+
+            // const aa = aaMap.get(items[3])!;
+            // const pos = Number(items[5])
+            // const x = Number(items[6]);
+            // const y = Number(items[7]);
+            // const z = Number(items[8]);
+
+            if (pos < 0 || pos !== Math.round(pos)) {
+                throw Error(`Position ${pos} not valid in line '${line}' of '${file.name}'.`)
+            }
 
             if (this.numDatasets === 0) {
                 this.data.set(pos, { aa, pos, coords: [[x, y, z]] })
@@ -213,12 +235,14 @@ export default class PdbStore {
                 item.coords.push([x, y, z]);
             }
         }
+        console.log("pdb parsed data:", this.data)
         runInAction(() => {
             this.numDatasets = this.numDatasets + 1;
         })
     }
 
     parsePdbFiles = async (files: File[], runInfomap = true) => {
+        console.log(`Parse pdb files: ${files.map(file => file.name)}`)
         await Promise.all(files.map(file => this.parsePdbFile(file)));
 
         if (runInfomap && this.numDatasets > 0) {

@@ -7,6 +7,7 @@ import Infomap from "@mapequation/infomap";
 import IsoformStore from "./IsoformStore";
 import { isFasta, parseFasta } from "../utils/sequence-parser";
 import BioMSA from "biomsa";
+import { tsv } from "d3";
 
 type AcceptedFormats = "fasta" | "pdb" | "net";
 
@@ -17,17 +18,37 @@ export const getExtension = (file: File) => {
     return file.name.split(".").pop()!;
 }
 
-type ExampleIsoformItem = {
-    id: string;
-    net: string;
-    pdb: string[];
-}
+
+const exampleItem = {
+    id: 0,
+    Aliases: "ATKEA1,KEA1",
+    Description: "Encodes a member of the cation/proton antiporters-2 antiporter superfamily, the K efflux antiporter KEA1 that is localized to the chloroplast envelope.",
+    GeneID: "AT1G01790",
+    Isoform1: "AT1G01790_P1",
+    Isoform2: "AT1G01790_c3",
+    Mechanism: "A3",
+    Time1: "WT_3h",
+    Time2: "WT_0h",
+} as const;
+
+type ExampleItemKeys = keyof typeof exampleItem;
+type ExampleItemKeysNoID = Omit<ExampleItemKeys, "id">;
+// type ExampleItemType = typeof exampleItem[ExampleItemKeys];
+// type ExampleItem = {
+//     // id: number;
+//     [key in ExampleItemKeys]: string;
+// };
 type ExampleItem = {
-    id: string;
-    isoform1: ExampleIsoformItem;
-    isoform2: ExampleIsoformItem;
-    sequences: string;
-}
+    id: number,
+    aliases: string
+    description: string
+    geneID: string
+    isoform1: string
+    isoform2: string
+    mechanism: string
+    time1: string
+    time2: string
+};
 
 export default class InputStore {
     rootStore: RootStore;
@@ -44,86 +65,9 @@ export default class InputStore {
     isLoadingFiles = false;
     errors: ErrorItem[] = [];
 
-    exampleData: ExampleItem[] = [
-        {
-            id: 'AT1G14150',
-            isoform1: {
-                id: 'AT1G14150_c1',
-                net: 'AT1G14150_c1_network_with_all_nodes.net',
-                pdb: [
-                    'AT1G14150_c1_aa/relaxed_model_1_pred_0.pdb',
-                    'AT1G14150_c1_aa/relaxed_model_2_pred_0.pdb',
-                    'AT1G14150_c1_aa/relaxed_model_3_pred_0.pdb',
-                    'AT1G14150_c1_aa/relaxed_model_4_pred_0.pdb',
-                    'AT1G14150_c1_aa/relaxed_model_5_pred_0.pdb',
-                ]
-            },
-            isoform2: {
-                id: 'AT1G14150.1',
-                net: 'AT1G14150.1_network_with_all_nodes.net',
-                pdb: [
-                    'AT1G14150.1_aa/relaxed_model_1_pred_0.pdb',
-                    'AT1G14150.1_aa/relaxed_model_2_pred_0.pdb',
-                    'AT1G14150.1_aa/relaxed_model_3_pred_0.pdb',
-                    'AT1G14150.1_aa/relaxed_model_4_pred_0.pdb',
-                    'AT1G14150.1_aa/relaxed_model_5_pred_0.pdb',
-                ]
-            },
-            sequences: 'AT1G14150.1_vs_AT1G14150_c1.fasta'
-        },
-        {
-            id: 'AT2G47450',
-            isoform1: {
-                id: 'AT2G47450_P1',
-                net: 'AT2G47450_P1_network_with_all_nodes.net',
-                pdb: [
-                    'AT2G47450_P1/relaxed_model_1_pred_0.pdb',
-                    'AT2G47450_P1/relaxed_model_2_pred_0.pdb',
-                    'AT2G47450_P1/relaxed_model_3_pred_0.pdb',
-                    'AT2G47450_P1/relaxed_model_4_pred_0.pdb',
-                    'AT2G47450_P1/relaxed_model_5_pred_0.pdb',
-                ]
-            },
-            isoform2: {
-                id: 'AT2G47450_s1',
-                net: 'AT1G14150_s1_network_with_all_nodes.net',
-                pdb: [
-                    'AT2G47450_s1/relaxed_model_1_pred_0.pdb',
-                    'AT2G47450_s1/relaxed_model_2_pred_0.pdb',
-                    'AT2G47450_s1/relaxed_model_3_pred_0.pdb',
-                    'AT2G47450_s1/relaxed_model_4_pred_0.pdb',
-                    'AT2G47450_s1/relaxed_model_5_pred_0.pdb',
-                ]
-            },
-            sequences: 'AT2G47450_P1_vs_AT2G47450_s1.fasta'
-        },
-        {
-            id: 'AT5G24120',
-            isoform1: {
-                id: 'AT5G24120_P1',
-                net: 'AT5G24120_P1_network_with_all_nodes.net',
-                pdb: [
-                    'AT5G24120_P1_aa/relaxed_model_1_pred_0.pdb',
-                    'AT5G24120_P1_aa/relaxed_model_2_pred_0.pdb',
-                    'AT5G24120_P1_aa/relaxed_model_3_pred_0.pdb',
-                    'AT5G24120_P1_aa/relaxed_model_4_pred_0.pdb',
-                    'AT5G24120_P1_aa/relaxed_model_5_pred_0.pdb',
-                ]
-            },
-            isoform2: {
-                id: 'AT5G24120_c2',
-                net: 'AT5G24120_c2_network_with_all_nodes.net',
-                pdb: [
-                    'AT5G24120_c2_aa/relaxed_model_1_pred_0.pdb',
-                    'AT5G24120_c2_aa/relaxed_model_2_pred_0.pdb',
-                    'AT5G24120_c2_aa/relaxed_model_3_pred_0.pdb',
-                    'AT5G24120_c2_aa/relaxed_model_4_pred_0.pdb',
-                    'AT5G24120_c2_aa/relaxed_model_5_pred_0.pdb',
-                ]
-            },
-            sequences: 'AT5G24120_P1_vs_AT5G24120_c2.fasta'
-        },
-    ];
+    exampleData: ExampleItem[] = [];
+
+    filterText: string = "";
 
     infomap = {
         progress: 0,
@@ -135,9 +79,12 @@ export default class InputStore {
     constructor(rootStore: RootStore) {
         this.rootStore = rootStore;
         makeObservable(this, {
+            exampleData: observable.ref,
             inputFiles: observable.ref,
             linkDistanceThreshold: observable,
             isLoadingFiles: observable,
+            filterText: observable,
+            filteredExampleData: computed,
             canGenerateAlluvial: computed,
             networks: computed,
             alignment: computed,
@@ -147,6 +94,8 @@ export default class InputStore {
         this.isoformStore2 = new IsoformStore(this, 2);
 
         this.rootStore.setSortModulesBy("nodeId");
+
+        this.loadExampleTable();
     }
 
     get isoforms() {
@@ -162,6 +111,13 @@ export default class InputStore {
         return this.isoforms.map(isoform => isoform.pdb.netFile);
     }
 
+    get filteredExampleData() {
+        const re = new RegExp(this.filterText, "i");
+        return this.exampleData.filter((row => {
+            return re.test(row.description) || re.test(row.isoform1) || re.test(row.isoform2);
+        }));
+    }
+
     get canGenerateAlluvial() {
         return this.isoformStore1.haveModules && this.isoformStore2.haveModules;
     }
@@ -173,6 +129,10 @@ export default class InputStore {
     setLinkDistanceThreshold = action((value: number) => {
         this.linkDistanceThreshold = value;
         this.isoforms.forEach(isoform => isoform.pdb.setLinkDistanceThreshold(value));
+    })
+
+    setFilterText = action((value: string) => {
+        this.filterText = value;
     })
 
     loadFiles = action(async (files: File[]) => {
@@ -221,28 +181,33 @@ export default class InputStore {
         }
     })
 
+    loadExampleTable = action(async () => {
+        console.log(`Load exmaple table...`);
+        // load a tsv file with d3
+        const data = await tsv(encodeURI(`/isoform/data/example_data.tsv`), (row: any, index: number) => {
+            return {
+                id: index,
+                aliases: row.Aliases,
+                description: row.Description,
+                geneID: row.GeneID,
+                isoform1: row.Isoform1,
+                isoform2: row.Isoform2,
+                mechanism: row.Mechanism,
+                time1: row.Time1,
+                time2: row.Time2,
+            }
+        }) as ExampleItem[];
+        console.log("Got data:", data);
+        this.exampleData = data;
+    })
+
     loadExample = action(async (item: ExampleItem) => {
 
-        const toFile = async (url: string) => {
-            const resp = await fetch(encodeURI(`/isoform/data/${url}`));
-            const text = await resp.text();
-            const file = new File([text], url, { type: "text/plain" });
-            return file;
-        }
-
-        // const files1 = await Promise.all([...item.isoform1.pdb, item.isoform1.net].map(toFile))
-        // const files2 = await Promise.all([...item.isoform2.pdb, item.isoform2.net].map(toFile))
-        const files1 = await Promise.all(item.isoform1.pdb.map(toFile))
-        const files2 = await Promise.all(item.isoform2.pdb.map(toFile))
-        const fileCommon = await toFile(item.sequences);
-
-        this.isoformStore1.setName(item.isoform1.id);
-        this.isoformStore2.setName(item.isoform2.id);
+        console.log("Load example:", item);
 
         await Promise.all([
-            this.isoformStore1.loadFiles(files1),
-            this.isoformStore2.loadFiles(files2),
-            this.loadSequences(fileCommon),
+            this.isoformStore1.loadExample(item.isoform1),
+            this.isoformStore2.loadExample(item.isoform2),
         ])
     })
 

@@ -66,7 +66,7 @@ export default observer(function IsoformApp() {
             <Heading as="h3" size="sm" mb={2}>
               &nbsp;
             </Heading>
-            <LoadData />
+            {/* <LoadData /> */}
           </Flex>
 
           <Flex direction="column">
@@ -99,6 +99,13 @@ export default observer(function IsoformApp() {
               </Box>
             )}
           </Flex>
+        </Flex>
+
+        <Flex mt={6} direction="column" alignItems="center">
+          <Heading as="h4" size="sm" mb={4}>
+            Load example data
+          </Heading>
+          <LoadData />
         </Flex>
       </Flex>
 

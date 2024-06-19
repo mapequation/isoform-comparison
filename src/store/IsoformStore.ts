@@ -9,7 +9,7 @@ import { calcStatistics } from "../components/LoadNetworks/utils"
 import PdbStore from "./PdbStore";
 import { ErrorItem } from "./InputStore";
 import { runInfomap } from "../utils/infomap";
-import { Sequence } from "../utils/sequence-parser";
+import { Sequence, isFasta, parseFasta } from "../utils/sequence-parser";
 
 const aaMap = new Map([
     ["ALA", "A"], ["ARG", "R"], ["ASN", "N"], ["ASP", "D"], ["CYS", "C"], ["GLN", "Q"], ["GLU", "E"], ["GLY", "G"], ["HIS", "H"],
@@ -190,9 +190,25 @@ export default class IsoformStore {
         this.errors.push(error);
     })
 
+    loadExample = action(async (name: string) => {
+        this.setName(name);
+
+        const toFile = async (url: string) => {
+            const resp = await fetch(encodeURI(url));
+            const text = await resp.text();
+            const file = new File([text], url, { type: "text/plain" });
+            return file;
+        }
+
+        const seqUrl = `/isoform/data/FASTA/${name}.fasta`;
+        const pdbUrls = Array.from(Array(5).keys()).map(n => `/isoform/data/Alphafold_PDBs/${name}/relaxed_model_${n + 1}_pred_0.pdb`);
+        const urls = [seqUrl, ...pdbUrls];
+        const files = await Promise.all(urls.map(toFile))
+        await this.loadFiles(files);
+    })
 
     loadFiles = action(async (files: File[]) => {
-        console.time("IsoformStore.loadFiles")
+        // console.time("IsoformStore.loadFiles")
         this.clear();
         this.isLoading = true;
 
@@ -209,7 +225,7 @@ export default class IsoformStore {
         await this.parseFiles();
 
         this.isLoading = false;
-        console.timeEnd("IsoformStore.loadFiles")
+        // console.timeEnd("IsoformStore.loadFiles")
     })
 
     parseFiles = action(async () => {
@@ -232,9 +248,37 @@ export default class IsoformStore {
             }
         }
 
+        const fastaFiles = this.getFiles("fasta");
+        if (fastaFiles.length > 0) {
+            await this.parseFastaFile(fastaFiles[0]);
+        }
+
+
         const pdbFiles = this.getFiles("pdb");
         await this.pdb.parsePdbFiles(pdbFiles);
     })
+
+    parseFastaFile = action(async (file: File) => {
+
+        const content = await file.text();
+        const lines = content.split("\n");
+        if (!isFasta(lines)) {
+            throw new Error(`Could not parse '${file.name}' as a fasta file.`);
+        }
+        const sequences = parseFasta(lines);
+        if (sequences.length !== 1) {
+            throw new Error(`Found ${sequences.length} sequences in ${file.name}, expected 1.`);
+        }
+        const seq = sequences[0];
+        const meta = seq.taxon.split(" | ");
+        if (meta.length > 1) {
+            seq.taxon = meta[0];
+        }
+        if (seq.taxon !== this.name) {
+            throw new Error(`Taxon '${seq.taxon}' in ${file.name} doesn't match isoform name '${this.name}'.`)
+        }
+        this.setSequence(seq);
+    });
 
 
     setNetworkFile = action(async (file: NetworkFile) => {

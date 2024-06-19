@@ -1,21 +1,23 @@
 import {
   Box,
-  Button,
   Flex,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Skeleton,
-  Text,
-  useColorModeValue,
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+  Input,
+  InputGroup,
+  InputRightElement,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react";
 import { useContext } from "react";
-import { useDropzone } from "react-dropzone";
 import { useError } from "../../hooks/useError";
 import { StoreContext } from "../../store";
-import { ChevronDownIcon } from "@chakra-ui/icons";
 
 const acceptedFormats = ["fasta", "pdb", "net"] as const;
 
@@ -30,92 +32,64 @@ const dropzoneAccept = {
 export default observer(function LoadData() {
   const store = useContext(StoreContext);
   const onError = useError();
-  //   const [state, dispatch] = useReducer(reducer, initialState, (state) => ({
-  //     ...state,
-  //     files: store.files,
-  //   }));
-  const onClose = () => {};
 
-  //   const { files } = state;
-
-  const onDrop = async (acceptedFiles: File[]) => {
-    console.time("onDrop");
-    await store.input.loadFiles(acceptedFiles);
-
-    store.input.errors.forEach((error) => onError(error));
-
-    console.timeEnd("onDrop");
-  };
-
-  const { open, getRootProps, getInputProps, isDragActive } = useDropzone({
-    // noClick: true,
-    accept: dropzoneAccept,
-    onDropRejected: (rejectedFiles) =>
-      rejectedFiles.forEach((rejectedFile) =>
-        onError({
-          title: `Cannot open ${rejectedFile.file.name}`,
-          description: rejectedFile.errors
-            .map(({ message }) => message)
-            .join("\n"),
-        })
-      ),
-    onDrop,
-  });
+  const columns = [
+    "GeneID",
+    // "Aliases",
+    "Isoform1",
+    "Isoform2",
+    "Mechanism",
+    "Time1",
+    "Time2",
+    "Description",
+  ];
 
   const showLoading = store.input.isLoadingFiles;
   return (
-    <>
-      <Skeleton
-        w="400px"
-        h="360px"
-        isLoaded={!showLoading}
-        // rounded="md"
-        border="1px dashed #ccc"
-      >
-        <div style={{ width: "100%", height: "100%" }} {...getRootProps()}>
-          <input {...getInputProps()} />
-          <Box
-            p={3}
-            bg={isDragActive ? "gray.200" : "gray.50"}
-            w="100%"
-            h="100%"
-            color="gray.600"
-            fontSize="medium"
-          >
-            {isDragActive ? (
-              <Text>Drop the files here ...</Text>
-            ) : (
-              <Text>
-                Drag and drop files here, or click to select files. <br />
-                <br /> Accepts <code>.fasta</code> and <code>.pdb</code> files,
-                or <code>.net</code> files for pre-made networks.
-                <br />
-                <br />
-                Isoform identified by filenames.
-              </Text>
-            )}
-          </Box>
-        </div>
-      </Skeleton>
-      {/* <Button onClick={createDiagram}>Create diagram</Button> */}
-      <Flex mt={2} justify="flex-end">
-        <Menu>
-          <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-            Load examples
-          </MenuButton>
-          <MenuList>
-            {store.input.exampleData.map((item) => (
-              <MenuItem
-                key={item.id}
-                value={item.id}
-                onClick={() => store.input.loadExample(item)}
+    <Box maxH={400} maxW={900} overflow="scroll">
+      <InputGroup>
+        <Input
+          placeholder="Search..."
+          value={store.input.filterText}
+          onChange={(event) => store.input.setFilterText(event.target.value)}
+        />
+        <InputRightElement
+          color="gray.300"
+          style={{ whiteSpace: "nowrap" }}
+          width={100}
+        >
+          {`${store.input.filteredExampleData.length} / ${store.input.exampleData.length}`}
+        </InputRightElement>
+      </InputGroup>
+      <TableContainer>
+        <Table variant="simple" size="sm">
+          <TableCaption>Example data</TableCaption>
+          <Thead>
+            <Tr>
+              {columns.map((column) => (
+                <Th key={column}>{column}</Th>
+              ))}
+            </Tr>
+          </Thead>
+          <Tbody>
+            {store.input.filteredExampleData.map((row) => (
+              <Tr
+                key={row.id}
+                cursor="pointer"
+                onClick={() => store.input.loadExample(row)}
               >
-                {item.isoform1.id} vs {item.isoform2.id}
-              </MenuItem>
+                <Td>{row.geneID}</Td>
+                <Td>{row.isoform1}</Td>
+                <Td>{row.isoform2}</Td>
+                <Td>{row.mechanism}</Td>
+                <Td>{row.time1}</Td>
+                <Td>{row.time2}</Td>
+                <Td>{row.description}</Td>
+              </Tr>
             ))}
-          </MenuList>
-        </Menu>
-      </Flex>
-    </>
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 });
