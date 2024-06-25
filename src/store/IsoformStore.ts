@@ -116,11 +116,26 @@ export default class IsoformStore {
             infomapArgs: observable,
             haveModules: computed,
             network: observable.ref,
+            fastaContent: observable,
+            fastaError: observable,
+            pdbContent: observable,
             sequence: observable.ref,
             alignedSequence: observable,
             alignmentMap: observable.ref,
         })
     }
+
+    fastaContent: string = "";
+    setFastaContent = action((content: string) => {
+        this.fastaContent = content;
+    })
+
+    fastaError: string = "";
+
+    pdbContent: string = "";
+    setPdbContent = action((content: string) => {
+        this.pdbContent = content;
+    })
 
     sequence: Sequence | null = null;
     setSequence = action((seq: Sequence) => {
@@ -259,15 +274,35 @@ export default class IsoformStore {
     })
 
     parseFastaFile = action(async (file: File) => {
-
         const content = await file.text();
+        await this.parseFastaContent(content, file.name);
+    })
+
+    loadFastaContent = action(async (content: string) => {
+        try {
+            await this.parseFastaContent(content);
+            this.fastaError = "";
+            this.setFastaContent("");
+        } catch (e: any) {
+            this.fastaError = e.message;
+            // this.addError({
+            //     title: "Sequence loading error",
+            //     description: e.message,
+            // });
+        }
+    })
+
+    parseFastaContent = action(async (content: string, filename?: string) => {
+        if (filename === undefined) {
+            filename = "loaded content"
+        }
         const lines = content.split("\n");
         if (!isFasta(lines)) {
-            throw new Error(`Could not parse '${file.name}' as a fasta file.`);
+            throw new Error(`Could not parse ${filename} as a fasta file.`);
         }
         const sequences = parseFasta(lines);
         if (sequences.length !== 1) {
-            throw new Error(`Found ${sequences.length} sequences in ${file.name}, expected 1.`);
+            throw new Error(`Found ${sequences.length} sequences in ${filename}, expected 1.`);
         }
         const seq = sequences[0];
         const meta = seq.taxon.split(" | ");
@@ -275,7 +310,14 @@ export default class IsoformStore {
             seq.taxon = meta[0];
         }
         if (seq.taxon !== this.name) {
-            throw new Error(`Taxon '${seq.taxon}' in ${file.name} doesn't match isoform name '${this.name}'.`)
+            const otherSequence = this.inputStore.isoforms
+                .filter(isoform => isoform !== this)
+                .map(isoform => isoform.sequence)[0];
+            if (otherSequence?.taxon === seq.taxon) {
+                throw new Error(`Taxon '${seq.taxon}' in ${filename} have the same name as the other isoform.`)
+            }
+            // throw new Error(`Taxon '${seq.taxon}' in ${filename} doesn't match isoform name '${this.name}'.`)
+            this.setName(seq.taxon);
         }
         this.setSequence(seq);
     });

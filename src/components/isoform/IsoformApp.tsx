@@ -21,7 +21,7 @@ export default observer(function IsoformApp() {
       store.input.loadExample(store.input.exampleData[0]);
     }
   });
-  console.log("!Render IsoformApp");
+  const { isoformStore1, isoformStore2 } = store.input;
 
   return (
     <Flex mt="100px" direction="column" alignItems="center">
@@ -40,7 +40,10 @@ export default observer(function IsoformApp() {
               width="500px"
               height="150px"
               placeholder="Paste gene sequence here (.fasta file)"
-              onLoadContent={() => {}}
+              value={isoformStore1.fastaContent}
+              onChangeContent={isoformStore1.setFastaContent}
+              onLoadContent={isoformStore1.loadFastaContent}
+              error={isoformStore1.fastaError}
             />
 
             <InputTextArea
@@ -52,12 +55,12 @@ export default observer(function IsoformApp() {
               mt="20px"
             />
 
-            {store.input.isoformStore1.sequence && (
+            {isoformStore1.sequence && (
               <Box mt={6}>
                 <Heading as="h4" size="sm">
-                  {store.input.isoformStore1.sequence.taxon}
+                  {isoformStore1.sequence.taxon}
                 </Heading>
-                <SequenceView code={store.input.isoformStore1.sequence.code} />
+                <SequenceView code={isoformStore1.sequence.code} />
               </Box>
             )}
           </Flex>
@@ -78,7 +81,10 @@ export default observer(function IsoformApp() {
               width="500px"
               height="150px"
               placeholder="Paste gene sequence here (.fasta file)"
-              onLoadContent={() => {}}
+              value={isoformStore2.fastaContent}
+              onChangeContent={isoformStore2.setFastaContent}
+              onLoadContent={isoformStore2.loadFastaContent}
+              error={isoformStore2.fastaError}
             />
 
             <InputTextArea
@@ -90,12 +96,12 @@ export default observer(function IsoformApp() {
               mt="20px"
             />
 
-            {store.input.isoformStore2.sequence && (
+            {isoformStore2.sequence && (
               <Box mt={6}>
                 <Heading as="h4" size="sm">
-                  {store.input.isoformStore2.sequence.taxon}
+                  {isoformStore2.sequence.taxon}
                 </Heading>
-                <SequenceView code={store.input.isoformStore2.sequence.code} />
+                <SequenceView code={isoformStore2.sequence.code} />
               </Box>
             )}
           </Flex>
