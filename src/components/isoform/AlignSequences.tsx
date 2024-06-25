@@ -1,4 +1,4 @@
-import { Box, Code, Flex, Heading } from "@chakra-ui/react";
+import { Box, Button, Code, Flex, Heading } from "@chakra-ui/react";
 import { useContext } from "react";
 import { StoreContext } from "../../store";
 import { getAAColor } from "../../store/PdbStore";
@@ -24,6 +24,12 @@ export default observer(function AlignSequences({}: {}) {
           {alignment.map((item) => (
             <Box key={`${item.name}-id`}>{item.name}</Box>
           ))}
+          <Button
+            isDisabled={!store.input.canGenerateAlignment}
+            onClick={store.input.generateAlignment}
+          >
+            Align
+          </Button>
         </Box>
 
         <Box overflowX="scroll" maxW={800}>

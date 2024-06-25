@@ -88,6 +88,7 @@ export default class InputStore {
             canGenerateAlluvial: computed,
             networks: computed,
             alignment: computed,
+            canGenerateAlignment: computed,
             infomap: observable,
         })
         this.isoformStore1 = new IsoformStore(this, 1);
@@ -104,6 +105,10 @@ export default class InputStore {
 
     get alignment() {
         return this.isoforms.map(isoform => ({ name: isoform.name, sequence: isoform.alignedSequence }));
+    }
+
+    get canGenerateAlignment() {
+        return this.isoforms.map(isoform => isoform.sequence?.code && !isoform.alignedSequence).filter(v => v).length === 2;
     }
 
     get networks() {
@@ -233,9 +238,6 @@ export default class InputStore {
         }
 
         await this.generateAlignment();
-
-        this.generateAlignedNetworks();
-
     })
 
     generateAlignment = action(async () => {
@@ -246,9 +248,14 @@ export default class InputStore {
         for (let i = 0; i < this.isoforms.length; ++i) {
             this.isoforms[i].setAlignedSequence(alignment[i])
         }
+
+        this.generateAlignedNetworks();
+
+
     })
 
     generateAlignedNetworks = action(() => {
+        console.log("Generate aligned networks...");
         const { alignment } = this;
         const N = alignment[0].sequence.length;
         if (N === 0) {

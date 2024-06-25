@@ -125,9 +125,19 @@ export default class PdbStore {
             network: observable.ref,
             infomapArgs: observable,
             infomap: observable,
+            content: observable,
+            error: observable,
             haveModules: computed,
+            haveNetwork: computed,
         });
     }
+
+    content: string = "";
+    setContent = action((content: string) => {
+        this.content = content;
+    })
+
+    error: string = "";
 
     clear = action(() => {
         this.isLoading = false;
@@ -135,6 +145,8 @@ export default class PdbStore {
         this.data = new Map<number, PdbItem>();
         this.netFile = null;
         this.errors = [];
+        this.error = "";
+        this.content = "";
 
         this.clearNetwork();
         this.clearInfomap();
@@ -158,6 +170,10 @@ export default class PdbStore {
 
     get name() {
         return this.isoformStore.name;
+    }
+
+    get haveNetwork() {
+        return this.network.nodes.length > 0;
     }
 
     get haveModules() {
@@ -190,6 +206,24 @@ export default class PdbStore {
      */
     parsePdbFile = async (file: File) => {
         const content = await file.text();
+        await this.loadPdbContent(content);
+    };
+
+    loadPdbContent = action(async (content: string) => {
+        try {
+            await this.parsePdbContent(content);
+            this.error = "";
+            this.setContent("");
+        } catch (e: any) {
+            this.error = e.message;
+            // this.addError({
+            //     title: "Sequence loading error",
+            //     description: e.message,
+            // });
+        }
+    })
+
+    parsePdbContent = async (content: string) => {
         const lines = content.split("\n");
         const re = /^ATOM\s+\d+\s+\w+\s+(?<aa>\w+)\s+\w\s*(?<pos>\d+)\s+(?<x>-?\d+\.\d+)\s+(?<y>-?\d+\.\d+)\s+(?<z>-?\d+\.\d+)\s+/;
         for (let i = 0; i < lines.length; ++i) {

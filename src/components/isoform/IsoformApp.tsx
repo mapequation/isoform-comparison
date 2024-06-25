@@ -51,7 +51,10 @@ export default observer(function IsoformApp() {
               width="500px"
               height="150px"
               placeholder="Paste gene 3D structure here (.pdb file from AlphaFold)"
-              onLoadContent={() => {}}
+              value={isoformStore1.pdb.content}
+              onChangeContent={isoformStore1.pdb.setContent}
+              onLoadContent={isoformStore1.pdb.loadPdbContent}
+              error={isoformStore1.pdb.error}
               mt="20px"
             />
 
@@ -92,7 +95,10 @@ export default observer(function IsoformApp() {
               width="500px"
               height="150px"
               placeholder="Paste gene 3D structure here (.pdb file from AlphaFold)"
-              onLoadContent={() => {}}
+              value={isoformStore2.pdb.content}
+              onChangeContent={isoformStore2.pdb.setContent}
+              onLoadContent={isoformStore2.pdb.loadPdbContent}
+              error={isoformStore2.pdb.error}
               mt="20px"
             />
 

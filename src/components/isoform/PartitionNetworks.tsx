@@ -100,11 +100,6 @@ const InfomapItem = observer(
 const NetworkItem = observer(({ isoform }: { isoform: IsoformStore }) => {
   // const onError = useError();
 
-  // console.log("!!! NetworkItem pdb netFile:", isoform.pdb.netFile);
-  if (!isoform.pdb.netFile) {
-    return null;
-  }
-
   const file = isoform.pdb.netFile;
 
   return (
@@ -123,9 +118,12 @@ const NetworkItem = observer(({ isoform }: { isoform: IsoformStore }) => {
           mt={8}
           pos="relative"
         >
-          <TruncatedFilename name={file.filename} maxLength={100} />
+          <TruncatedFilename
+            name={file?.filename ?? "Pending..."}
+            maxLength={100}
+          />
 
-          {file.size > 0 && <Text>{humanFileSize(file.size)}</Text>}
+          {file && file.size > 0 && <Text>{humanFileSize(file.size)}</Text>}
 
           <InfomapItem isoform={isoform} pdb />
           <NetworkInfo isoform={isoform} />
