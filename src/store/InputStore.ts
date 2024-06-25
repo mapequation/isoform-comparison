@@ -114,7 +114,7 @@ export default class InputStore {
     get filteredExampleData() {
         const re = new RegExp(this.filterText, "i");
         return this.exampleData.filter((row => {
-            return re.test(row.description) || re.test(row.isoform1) || re.test(row.isoform2);
+            return re.test(row.description) || re.test(row.geneID) || re.test(row.isoform1) || re.test(row.isoform2);
         }));
     }
 

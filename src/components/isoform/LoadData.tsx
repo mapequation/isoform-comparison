@@ -79,8 +79,8 @@ export default observer(function LoadData() {
                 onClick={() => store.input.loadExample(row)}
               >
                 <Td>{row.geneID}</Td>
-                <Td>{row.isoform1}</Td>
-                <Td>{row.isoform2}</Td>
+                <Td>*{row.isoform1.substring(row.geneID.length)}</Td>
+                <Td>*{row.isoform2.substring(row.geneID.length)}</Td>
                 <Td>{row.mechanism}</Td>
                 <Td>{row.time1}</Td>
                 <Td>{row.time2}</Td>
