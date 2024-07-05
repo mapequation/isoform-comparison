@@ -223,7 +223,10 @@ export default class PdbStore {
         }
     })
 
-    parsePdbContent = async (content: string) => {
+    parsePdbContent = async (content: string, filename?: string) => {
+        if (filename === undefined) {
+            filename = "loaded content"
+        }
         const lines = content.split("\n");
         const re = /^ATOM\s+\d+\s+\w+\s+(?<aa>\w+)\s+\w\s*(?<pos>\d+)\s+(?<x>-?\d+\.\d+)\s+(?<y>-?\d+\.\d+)\s+(?<z>-?\d+\.\d+)\s+/;
         for (let i = 0; i < lines.length; ++i) {
@@ -234,7 +237,7 @@ export default class PdbStore {
 
             const match = re.exec(line);
             if (match === null || match.groups === undefined) {
-                throw Error(`Line ${i + 1} (${line}) of '${file.name}' doesn't match expected pattern.`);
+                throw Error(`Line ${i + 1} (${line}) of ${filename} doesn't match expected pattern.`);
             }
             const aa = aaMap.get(match.groups.aa)!;
             const pos = Number(match.groups.pos)
@@ -252,7 +255,7 @@ export default class PdbStore {
             // const z = Number(items[8]);
 
             if (pos < 0 || pos !== Math.round(pos)) {
-                throw Error(`Position ${pos} not valid in line '${line}' of '${file.name}'.`)
+                throw Error(`Position ${pos} not valid in line '${line}' of ${filename}.`)
             }
 
             if (this.numDatasets === 0) {
@@ -264,13 +267,16 @@ export default class PdbStore {
                     throw Error(`Position ${pos} in dataset ${this.numDatasets + 1} does not exist in previous.`)
                 }
                 if (aa !== item.aa) {
-                    throw Error(`Aminiacid '${aa}' in pos ${pos} does not match '${item.aa}' in previous dataset`);
+                    throw Error(`Aminoacid '${aa}' in pos ${pos} does not match '${item.aa}' in previous dataset`);
                 }
                 item.coords.push([x, y, z]);
             }
         }
         console.log("pdb parsed data:", this.data)
         runInAction(() => {
+            if (this.numDatasets === 0) {
+                this.generateNetwork();
+            }
             this.numDatasets = this.numDatasets + 1;
         })
     }

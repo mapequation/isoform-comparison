@@ -120,6 +120,7 @@ export default class IsoformStore {
             fastaError: observable,
             pdbContent: observable,
             sequence: observable.ref,
+            haveSequence: computed,
             alignedSequence: observable,
             alignmentMap: observable.ref,
         })
@@ -141,6 +142,10 @@ export default class IsoformStore {
     setSequence = action((seq: Sequence) => {
         this.sequence = seq;
     })
+
+    get haveSequence() {
+        return this.sequence !== null;
+    }
 
     alignedSequence: string = "";
     setAlignedSequence = action((code: string) => {
@@ -207,6 +212,7 @@ export default class IsoformStore {
 
     loadExample = action(async (name: string) => {
         this.setName(name);
+        console.log(`Load example '${name}'...`, this.alignedSequence)
 
         const toFile = async (url: string) => {
             const resp = await fetch(encodeURI(url));
@@ -220,6 +226,8 @@ export default class IsoformStore {
         const urls = [seqUrl, ...pdbUrls];
         const files = await Promise.all(urls.map(toFile))
         await this.loadFiles(files);
+
+        console.log(`Load example '${name}' done!`, this.alignedSequence)
     })
 
     loadFiles = action(async (files: File[]) => {

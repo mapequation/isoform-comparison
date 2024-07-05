@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text } from "@chakra-ui/react";
+import { Box, Flex, HStack, Heading, Text } from "@chakra-ui/react";
 import { observer } from "mobx-react";
 import { useContext, useState } from "react";
 import { StoreContext } from "../../store";
@@ -10,6 +10,7 @@ import InputTextArea from "./InputTextArea";
 import useEventListener from "../../hooks/useEventListener";
 import IsoformAlluvialDiagram from "./IsoformAlluvialDiagram";
 import SequenceView from "./SequenceView";
+import { CheckCircleIcon } from "@chakra-ui/icons";
 
 export default observer(function IsoformApp() {
   const store = useContext(StoreContext);
@@ -28,90 +29,73 @@ export default observer(function IsoformApp() {
       <Flex id="step1" direction="column" alignItems="center" mb={20}>
         <StepHeading step={1} title="Load data" active={activeStep == 1} />
 
-        <Text>Paste or load your own data below or load example data.</Text>
+        <Text>
+          Load your own data below to submit your own analysis or load example
+          data.
+        </Text>
 
-        <Flex mt={6}>
-          <Flex direction="column">
-            <Heading as="h3" size="sm" mb={2}>
-              Isoform 1
-            </Heading>
-            <InputTextArea
-              isoID={1}
-              width="500px"
-              height="150px"
-              placeholder="Paste gene sequence here (.fasta file)"
-              value={isoformStore1.fastaContent}
-              onChangeContent={isoformStore1.setFastaContent}
-              onLoadContent={isoformStore1.loadFastaContent}
-              error={isoformStore1.fastaError}
-            />
-
-            <InputTextArea
-              isoID={1}
-              width="500px"
-              height="150px"
-              placeholder="Paste gene 3D structure here (.pdb file from AlphaFold)"
-              value={isoformStore1.pdb.content}
-              onChangeContent={isoformStore1.pdb.setContent}
-              onLoadContent={isoformStore1.pdb.loadPdbContent}
-              error={isoformStore1.pdb.error}
-              mt="20px"
-            />
-
-            {isoformStore1.sequence && (
-              <Box mt={6}>
-                <Heading as="h4" size="sm">
-                  {isoformStore1.sequence.taxon}
+        <HStack spacing="24px" mt={6} alignItems="start">
+          {[
+            store.input.isoforms.map((isoformStore, i) => (
+              <Flex direction="column">
+                <Heading as="h2" size="md" mb={2}>
+                  Isoform {i + 1}
                 </Heading>
-                <SequenceView code={isoformStore1.sequence.code} />
-              </Box>
-            )}
-          </Flex>
 
-          <Flex direction="column" mx={4}>
-            <Heading as="h3" size="sm" mb={2}>
-              &nbsp;
-            </Heading>
-            {/* <LoadData /> */}
-          </Flex>
-
-          <Flex direction="column">
-            <Heading as="h3" size="sm" mb={2}>
-              Isoform 2
-            </Heading>
-            <InputTextArea
-              isoID={2}
-              width="500px"
-              height="150px"
-              placeholder="Paste gene sequence here (.fasta file)"
-              value={isoformStore2.fastaContent}
-              onChangeContent={isoformStore2.setFastaContent}
-              onLoadContent={isoformStore2.loadFastaContent}
-              error={isoformStore2.fastaError}
-            />
-
-            <InputTextArea
-              isoID={2}
-              width="500px"
-              height="150px"
-              placeholder="Paste gene 3D structure here (.pdb file from AlphaFold)"
-              value={isoformStore2.pdb.content}
-              onChangeContent={isoformStore2.pdb.setContent}
-              onLoadContent={isoformStore2.pdb.loadPdbContent}
-              error={isoformStore2.pdb.error}
-              mt="20px"
-            />
-
-            {isoformStore2.sequence && (
-              <Box mt={6}>
-                <Heading as="h4" size="sm">
-                  {isoformStore2.sequence.taxon}
+                <Heading as="h3" size="sm" mb={2}>
+                  Gene sequence
+                  <CheckCircleIcon
+                    ml={3}
+                    color={isoformStore.haveSequence ? "green.500" : "gray.200"}
+                  />
                 </Heading>
-                <SequenceView code={isoformStore2.sequence.code} />
-              </Box>
-            )}
-          </Flex>
-        </Flex>
+
+                <InputTextArea
+                  isoID={isoformStore.isoID}
+                  width="500px"
+                  height="150px"
+                  placeholder="Paste gene sequence here (.fasta file)"
+                  value={isoformStore.fastaContent}
+                  onChangeContent={isoformStore.setFastaContent}
+                  onLoadContent={isoformStore.loadFastaContent}
+                  error={isoformStore.fastaError}
+                />
+
+                <Heading as="h3" size="sm" mb={2}>
+                  Gene structure
+                  <CheckCircleIcon
+                    ml={3}
+                    color={
+                      isoformStore.pdb.numDatasets > 0
+                        ? "green.500"
+                        : "gray.200"
+                    }
+                  />
+                </Heading>
+
+                <InputTextArea
+                  isoID={isoformStore.isoID}
+                  width="500px"
+                  height="150px"
+                  placeholder="Paste gene 3D structure here (.pdb file from AlphaFold)"
+                  value={isoformStore.pdb.content}
+                  onChangeContent={isoformStore.pdb.setContent}
+                  onLoadContent={isoformStore.pdb.loadPdbContent}
+                  error={isoformStore.pdb.error}
+                />
+
+                {isoformStore.sequence && (
+                  <Box mt={6}>
+                    <Heading as="h4" size="sm">
+                      {isoformStore.sequence.taxon}
+                    </Heading>
+                    <SequenceView code={isoformStore.sequence.code} />
+                  </Box>
+                )}
+              </Flex>
+            )),
+          ]}
+        </HStack>
 
         <Flex mt={6} direction="column" alignItems="center">
           <Heading as="h4" size="sm" mb={4}>
