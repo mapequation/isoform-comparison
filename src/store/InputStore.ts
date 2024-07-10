@@ -69,6 +69,8 @@ export default class InputStore {
 
     filterText: string = "";
 
+    haveAlluvial = false;
+
     infomap = {
         progress: 0,
         isRunning: false,
@@ -79,6 +81,7 @@ export default class InputStore {
     constructor(rootStore: RootStore) {
         this.rootStore = rootStore;
         makeObservable(this, {
+            haveAlluvial: observable,
             exampleData: observable.ref,
             inputFiles: observable.ref,
             linkDistanceThreshold: observable,
@@ -298,10 +301,13 @@ export default class InputStore {
             return;
         }
         this.rootStore.setNetworks(this.networks);
+        this.haveAlluvial = true;
     })
 
-    runInfomap = action(async () => {
-
+    clear = action(() => {
+        this.haveAlluvial = false;
+        this.isoforms.forEach(isoform => {
+            isoform.clear();
+        })
     })
-
 }

@@ -1,8 +1,9 @@
-import { Box, Button, Flex } from "@chakra-ui/react";
+import { Button, Flex, List } from "@chakra-ui/react";
 import { observer } from "mobx-react";
 import { useContext } from "react";
 import { StoreContext } from "../../store";
 import Diagram from "../Diagram";
+import Export from "../Sidebar/Export";
 
 export default observer(function IsoformAlluvialDiagram() {
   const store = useContext(StoreContext);
@@ -18,6 +19,10 @@ export default observer(function IsoformAlluvialDiagram() {
 
       <Flex mt={8}></Flex>
       <Diagram width={1280} height={740} />
+
+      <List spacing={2} fontSize="0.9rem">
+        {store.input.haveAlluvial && <Export />}
+      </List>
     </Flex>
   );
 });
