@@ -38,33 +38,11 @@ export default observer(function IsoformApp() {
           {[
             store.input.isoforms.map((isoformStore, i) => (
               <Flex direction="column">
-                <Heading as="h2" size="md" mb={2}>
+                <Heading as="h3" size="sm" mb={2} display="flex">
                   Isoform {i + 1}
-                </Heading>
-
-                <Heading as="h3" size="sm" mb={2}>
-                  Gene sequence
                   <CheckCircleIcon
                     ml={3}
-                    color={isoformStore.haveSequence ? "green.500" : "gray.200"}
-                  />
-                </Heading>
-
-                <InputTextArea
-                  isoID={isoformStore.isoID}
-                  width="500px"
-                  height="150px"
-                  placeholder="Paste gene sequence here (.fasta file)"
-                  value={isoformStore.fastaContent}
-                  onChangeContent={isoformStore.setFastaContent}
-                  onLoadContent={isoformStore.loadFastaContent}
-                  error={isoformStore.fastaError}
-                />
-
-                <Heading as="h3" size="sm" mb={2}>
-                  Gene structure
-                  <CheckCircleIcon
-                    ml={3}
+                    alignSelf="center"
                     color={
                       isoformStore.pdb.numDatasets > 0
                         ? "green.500"

@@ -274,10 +274,15 @@ export default class PdbStore {
         }
         console.log("pdb parsed data:", this.data)
         runInAction(() => {
-            if (this.numDatasets === 0) {
+            this.numDatasets = this.numDatasets + 1;
+            if (this.numDatasets === 1) {
+                const seq = {
+                    taxon: this.isoformStore.name,
+                    code: Array.from(this.data, ([_, item]) => item.aa).join(""),
+                }
+                this.isoformStore.setSequence(seq);
                 this.generateNetwork();
             }
-            this.numDatasets = this.numDatasets + 1;
         })
     }
 
@@ -329,6 +334,7 @@ export default class PdbStore {
                 }
             }
         }
+        // console.log(`!!! Generated network with ${nodes.length} nodes and ${links.length} links!`)
 
         this.network = {
             nodes,

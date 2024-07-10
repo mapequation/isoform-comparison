@@ -151,7 +151,9 @@ export default observer(function PartitionNetworks() {
       </Box>
 
       <Box mt={4}>
-        <Box>Link distance threshold: {store.input.linkDistanceThreshold}</Box>
+        <Box>
+          Link distance threshold: {store.input.linkDistanceThreshold} Å
+        </Box>
         <Slider
           width={400}
           aria-label="link-threshold"
