@@ -28,9 +28,10 @@ export default observer(function GraphComponent({
      */
     if (ref.current) {
       const g = ref.current as ForceGraphMethods;
-      setTimeout(() => {
-        g.zoomToFit(400, 0);
-      }, 100);
+      g.cameraPosition({ z: 200 });
+      // setTimeout(() => {
+      //   g.zoomToFit(400, 0);
+      // }, 100);
     }
   }, [ref]);
 
