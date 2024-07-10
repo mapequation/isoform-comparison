@@ -1,4 +1,5 @@
-import { HStack, useColorModeValue } from "@chakra-ui/react";
+import { Flex, HStack, Text, useColorModeValue } from "@chakra-ui/react";
+import Infomap from "@mapequation/infomap";
 
 export default function Logo({ showVersion = false, long = false }) {
   const color = useColorModeValue("hsl(0, 0%, 33%)", "hsl(0, 0%, 60%)");
@@ -15,22 +16,29 @@ export default function Logo({ showVersion = false, long = false }) {
             src="//www.mapequation.org/assets/img/twocolormapicon_whiteboarder.svg"
           />
         </a>
-        <div>
-          <span
-            style={{
-              fontFamily: "Philosopher, serif",
-              fontWeight: 700,
-              fontSize: "1.4em",
-            }}
-          >
-            <span style={{ color: brand }}>Isoform</span>
-            <span style={{ color }}> Comparison</span>
-            {long && <span style={{ color }}> Generator</span>}
-          </span>
-          {showVersion && (
-            <span style={{ color }}>{" v" + __APP_VERSION__}</span>
-          )}
-        </div>
+        <Flex direction="column">
+          <Flex alignItems="center">
+            <Text
+              style={{
+                fontFamily: "Philosopher, serif",
+                fontWeight: 700,
+                fontSize: "1.4em",
+              }}
+            >
+              <span style={{ color: brand }}>Isoform</span>
+              <span style={{ color }}> Comparison</span>
+              {long && <span style={{ color }}> Generator</span>}
+            </Text>
+            {showVersion && (
+              <Text ml={1} color={color}>
+                {" v" + __APP_VERSION__}
+              </Text>
+            )}
+          </Flex>
+          <Text mt={-2} fontSize="xs">
+            Powered by Infomap v{Infomap.__version__}
+          </Text>
+        </Flex>
       </HStack>
     </HStack>
   );
