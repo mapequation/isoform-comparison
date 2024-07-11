@@ -223,7 +223,8 @@ export default class IsoformStore {
 
         const seqUrl = `/isoform/data/FASTA/${name}.fasta`;
         const pdbUrls = Array.from(Array(5).keys()).map(n => `/isoform/data/Alphafold_PDBs/${name}/relaxed_model_${n + 1}_pred_0.pdb`);
-        const urls = [seqUrl, ...pdbUrls];
+        // const urls = [seqUrl, ...pdbUrls];
+        const urls = pdbUrls;
         const files = await Promise.all(urls.map(toFile))
         await this.loadFiles(files);
 

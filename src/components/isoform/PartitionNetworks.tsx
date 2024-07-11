@@ -20,6 +20,7 @@ import {
   SliderFilledTrack,
   SliderThumb,
   SliderMark,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { useContext, useId } from "react";
 import { observer } from "mobx-react";
@@ -31,6 +32,7 @@ import IsoformStore from "../../store/IsoformStore";
 import Graph from "./Graph";
 import { PdbProgress } from "./Progress";
 import NetworkInfo from "./NetworkInfo";
+import SelectButtonGroup from "../General/SelectButtonGroup";
 
 const InfomapItem = observer(
   ({ isoform, pdb }: { isoform: IsoformStore; pdb?: boolean }) => {
@@ -100,13 +102,33 @@ const InfomapItem = observer(
 const NetworkItem = observer(({ isoform }: { isoform: IsoformStore }) => {
   // const onError = useError();
 
-  const file = isoform.pdb.netFile;
+  const { pdb } = isoform;
+  const file = pdb.netFile;
 
   return (
     <Box maxW="100%" h="100%" pos="relative" bg="transparent">
       <Heading size="sm">Isoform {isoform.isoID}</Heading>
       <Box>
         <Graph isoform={isoform} />
+        {pdb.numDatasets > 1 && (
+          <Box>
+            <SelectButtonGroup
+              value={pdb.selectedIndex}
+              onChangeSelected={(value) =>
+                pdb.setSelectedIndex(value as number)
+              }
+              size="sm"
+              isAttached
+              variant="outline"
+            >
+              {Array.from(Array(pdb.numDatasets).keys()).map((i) => (
+                <Button key={i} value={i}>
+                  {i + 1}
+                </Button>
+              ))}
+            </SelectButtonGroup>
+          </Box>
+        )}
       </Box>
       <Box>
         <Box

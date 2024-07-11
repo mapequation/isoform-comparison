@@ -56,9 +56,11 @@ type PdbItem = {
 }
 
 export type IsoformNode = {
+    index: number;
     id: string;
     label: string;
     color: string;
+    pdbItem: PdbItem;
     module?: number;
     fx?: number;
     fy?: number;
@@ -66,10 +68,12 @@ export type IsoformNode = {
 }
 
 export type IsoformLink = {
-    source: string;
-    target: string;
-    id?: string;
+    sourceId: string;
+    targetId: string;
     weight: number;
+    id?: string;
+    source?: IsoformNode,
+    target?: IsoformNode,
 }
 
 export type IsoformNetwork = {
@@ -125,6 +129,7 @@ export default class PdbStore {
             network: observable.ref,
             infomapArgs: observable,
             infomap: observable,
+            selectedIndex: observable,
             content: observable,
             error: observable,
             haveModules: computed,
@@ -139,9 +144,19 @@ export default class PdbStore {
 
     error: string = "";
 
+    selectedIndex = 0;
+    setSelectedIndex = action((value: number) => {
+        if (value >= 0 && value < this.numDatasets && value !== this.selectedIndex) {
+            this.selectedIndex = value;
+            this.updateNodePositions();
+            // this.generateNetwork();
+        }
+    })
+
     clear = action(() => {
         this.isLoading = false;
         this.numDatasets = 0;
+        this.selectedIndex = 0;
         this.data = new Map<number, PdbItem>();
         this.netFile = null;
         this.errors = [];
@@ -281,12 +296,12 @@ export default class PdbStore {
                     code: Array.from(this.data, ([_, item]) => item.aa).join(""),
                 }
                 this.isoformStore.setSequence(seq);
-                this.generateNetwork();
             }
+            this.generateNetwork();
         })
     }
 
-    parsePdbFiles = async (files: File[], runInfomap = true) => {
+    parsePdbFiles = async (files: File[], runInfomap = false) => {
         console.log(`Parse pdb files: ${files.map(file => file.name)}`)
         await Promise.all(files.map(file => this.parsePdbFile(file)));
 
@@ -296,18 +311,64 @@ export default class PdbStore {
         }
     }
 
-    generateNetwork = action(() => {
-        const nodes: IsoformNode[] = [];
-        const { alignmentMap } = this.isoformStore;
-        this.data.forEach(item => {
-            const [fx, fy, fz] = item.coords[0];
+    getNodeLabel(item: PdbItem) {
+        return this.isoformStore.alignmentMap?.get(item.pos) ?? `${item.pos}_${item.aa}`;
+    }
+
+    updateNodes() {
+        this.network.nodes = this.network.nodes.map((node, i) => {
+            const item = this.data.get(i + 1)!;
+            const [fx, fy, fz] = item.coords[this.selectedIndex];
+            return {
+                ...node,
+                label: this.getNodeLabel(item),
+                fx, fy, fz,
+            }
+        });
+        return this.network.nodes;
+    }
+
+    getNodes() {
+        const nodes: IsoformNode[] = this.network.nodes;
+        if (nodes.length > 0) {
+            return this.updateNodes();
+        }
+
+        this.data.forEach((item, index) => {
+            const [fx, fy, fz] = item.coords[this.selectedIndex];
             nodes.push({
+                index,
                 id: `${item.pos}`,
-                label: alignmentMap?.get(item.pos) ?? `${item.pos}_${item.aa}`,
+                label: this.getNodeLabel(item),
                 color: aaColorMap.get(item.aa)!,
+                pdbItem: item,
                 fx, fy, fz,
             })
         });
+        return nodes;
+    }
+
+    updateLinks() {
+        const { nodes, links } = this.network;
+        this.network.links = links.map(link => {
+            return {
+                ...link,
+                source: nodes[link.source!.index],
+                target: nodes[link.target!.index],
+            }
+        });
+        return this.network.links;
+    }
+
+    updateNodePositions = action(() => {
+        this.network = {
+            nodes: this.getNodes(),
+            links: this.updateLinks(),
+        }
+    })
+
+    generateNetwork = action(() => {
+        const nodes = this.getNodes();
 
         const calcDistanceSquared = (p1: Coord, p2: Coord) => {
             const d = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]];
@@ -324,13 +385,13 @@ export default class PdbStore {
                 const p2 = items[j];
                 let weight = 0;
                 for (let k = 0; k < this.numDatasets; ++k) {
-                    const d2 = calcDistanceSquared(p1.coords[0], p2.coords[0]);
+                    const d2 = calcDistanceSquared(p1.coords[k], p2.coords[k]);
                     if (d2 <= threshold) {
                         weight += 1
                     }
                 }
                 if (weight > 0) {
-                    links.push({ source: `${p1.pos}`, target: `${p2.pos}`, weight: weight / this.numDatasets })
+                    links.push({ sourceId: `${p1.pos}`, targetId: `${p2.pos}`, weight: weight / this.numDatasets })
                 }
             }
         }
@@ -371,7 +432,7 @@ export default class PdbStore {
     serializeNetwork = () => {
         const { nodes, links } = this.network;
 
-        const getId = links.length > 0 && typeof links[0].source !== 'string' ? ((v: { id: string }) => v.id) : (v: string) => v;
+        // const getId = links.length > 0 && typeof links[0].source !== 'string' ? ((v: { id: string }) => v.id) : (v: string) => v;
 
         const lines: string[] = [];
         lines.push(`*Vertices ${nodes.length}`);
@@ -383,7 +444,7 @@ export default class PdbStore {
             //@ts-ignore
             // console.log(`${getId(link.source)} ${getId(link.target)}`, link);
             //@ts-ignore
-            lines.push(`${getId(link.source)} ${getId(link.target)} ${link.weight}`);
+            lines.push(`${link.sourceId} ${link.targetId} ${link.weight}`);
         })
         // console.log(lines)
         return lines.join('\n');

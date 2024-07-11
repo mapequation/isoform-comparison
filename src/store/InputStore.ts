@@ -217,6 +217,14 @@ export default class InputStore {
             this.isoformStore1.loadExample(item.isoform1),
             this.isoformStore2.loadExample(item.isoform2),
         ])
+        console.log("Generate alignment...");
+        this.generateAlignment();
+
+        console.log("Run Infomap...");
+        await this.runInfomap();
+
+        console.log("Generate alluvial diagram...");
+        this.generateAlluvialDiagram();
     })
 
     loadSequences = action(async (file: File) => {
@@ -253,8 +261,6 @@ export default class InputStore {
         }
 
         this.generateAlignedNetworks();
-
-
     })
 
     generateAlignedNetworks = action(() => {
@@ -302,6 +308,13 @@ export default class InputStore {
         }
         this.rootStore.setNetworks(this.networks);
         this.haveAlluvial = true;
+    })
+
+    runInfomap = action(async () => {
+        await Promise.all([
+            this.isoformStore1.pdb.runInfomap(),
+            this.isoformStore2.pdb.runInfomap(),
+        ])
     })
 
     clear = action(() => {

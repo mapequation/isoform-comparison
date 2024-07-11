@@ -14,7 +14,7 @@ export default observer(function IsoformAlluvialDiagram() {
         isDisabled={!store.input.canGenerateAlluvial}
         onClick={store.input.generateAlluvialDiagram}
       >
-        Re-generate alluvial diagram
+        {store.input.haveAlluvial ? "Re-generate" : "Generate"} alluvial diagram
       </Button>
 
       <Flex mt={8}></Flex>

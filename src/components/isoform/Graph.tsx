@@ -48,6 +48,8 @@ export default observer(function GraphComponent({
         linkOpacity={0.7}
         linkWidth={0.3}
         graphData={network}
+        linkSource="sourceId"
+        linkTarget="targetId"
         showNavInfo={false}
         // nodeLabel="label"
         nodeLabel={(node) =>
