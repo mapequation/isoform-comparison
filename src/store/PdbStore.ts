@@ -165,6 +165,8 @@ export default class PdbStore {
 
         this.clearNetwork();
         this.clearInfomap();
+
+        this.isoformStore.sequence = null;
     })
 
     clearNetwork = action(() => {
@@ -224,6 +226,12 @@ export default class PdbStore {
         await this.loadPdbContent(content);
     };
 
+    loadFiles = async (files: File[]) => {
+        this.isLoading = true;
+        await Promise.all(files.map(this.parsePdbFile));
+        this.isLoading = false;
+    }
+
     loadPdbContent = action(async (content: string) => {
         try {
             await this.parsePdbContent(content);
@@ -231,10 +239,11 @@ export default class PdbStore {
             this.setContent("");
         } catch (e: any) {
             this.error = e.message;
-            // this.addError({
-            //     title: "Sequence loading error",
-            //     description: e.message,
-            // });
+            console.error("Error loading pdb content:", e.message);
+            this.addError({
+                title: "PDB loading error",
+                description: e.message,
+            });
         }
     })
 
@@ -281,8 +290,9 @@ export default class PdbStore {
                 if (item === undefined) {
                     throw Error(`Position ${pos} in dataset ${this.numDatasets + 1} does not exist in previous.`)
                 }
+                console.log(`Pos ${pos}: '${aa}', earlier: ${item.aa}`)
                 if (aa !== item.aa) {
-                    throw Error(`Aminoacid '${aa}' in pos ${pos} does not match '${item.aa}' in previous dataset`);
+                    throw Error(`Aminoacid '${aa}' in pos ${pos} in dataset ${this.numDatasets + 1} does not match '${item.aa}' in previous dataset`);
                 }
                 item.coords.push([x, y, z]);
             }

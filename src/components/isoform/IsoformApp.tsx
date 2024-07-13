@@ -11,6 +11,9 @@ import useEventListener from "../../hooks/useEventListener";
 import IsoformAlluvialDiagram from "./IsoformAlluvialDiagram";
 import SequenceView from "./SequenceView";
 import { CheckCircleIcon } from "@chakra-ui/icons";
+import FileInput from "./FileInput";
+import DropData from "./DropData";
+import { Button } from "../Sidebar/components";
 
 export default observer(function IsoformApp() {
   const store = useContext(StoreContext);
@@ -22,7 +25,6 @@ export default observer(function IsoformApp() {
       store.input.loadExample(store.input.exampleData[0]);
     }
   });
-  const { isoformStore1, isoformStore2 } = store.input;
 
   return (
     <Flex mt="100px" direction="column" alignItems="center">
@@ -51,24 +53,22 @@ export default observer(function IsoformApp() {
                   />
                 </Heading>
 
-                <InputTextArea
-                  isoID={isoformStore.isoID}
-                  width="500px"
-                  height="150px"
-                  placeholder="Paste gene 3D structure here (.pdb file from AlphaFold)"
-                  value={isoformStore.pdb.content}
-                  onChangeContent={isoformStore.pdb.setContent}
-                  onLoadContent={isoformStore.pdb.loadPdbContent}
-                  error={isoformStore.pdb.error}
-                />
+                <DropData isoform={isoformStore} />
 
                 {isoformStore.sequence && (
-                  <Box mt={6}>
-                    <Heading as="h4" size="sm">
-                      {isoformStore.sequence.taxon}
-                    </Heading>
+                  <Flex mt={6} direction="column">
+                    {/* <Heading as="h4" size="sm">
+                      Sequence
+                    </Heading> */}
                     <SequenceView code={isoformStore.sequence.code} />
-                  </Box>
+                    <Button
+                      alignSelf="end"
+                      width="auto"
+                      onClick={isoformStore.pdb.clear}
+                    >
+                      Clear
+                    </Button>
+                  </Flex>
                 )}
               </Flex>
             )),

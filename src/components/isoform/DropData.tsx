@@ -1,23 +1,17 @@
 import {
   Box,
-  Button,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
+  FormControl,
+  FormErrorMessage,
   Skeleton,
   Text,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { observer } from "mobx-react";
-import { useContext } from "react";
 import { useDropzone } from "react-dropzone";
 import { useError } from "../../hooks/useError";
-import { StoreContext } from "../../store";
-import { ChevronDownIcon } from "@chakra-ui/icons";
+import IsoformStore from "../../store/IsoformStore";
 
-const acceptedFormats = ["fasta", "pdb", "net"] as const;
+// const acceptedFormats = ["fasta", "pdb", "net"] as const;
+const acceptedFormats = ["pdb"] as const;
 
 const dropzoneAccept = {
   "text/plain": acceptedFormats.map((format) => `.${format}`),
@@ -27,8 +21,12 @@ const dropzoneAccept = {
 //   onClose: () => void;
 // };
 
-export default observer(function LoadData() {
-  const store = useContext(StoreContext);
+export default observer(function LoadData({
+  isoform,
+}: {
+  isoform: IsoformStore;
+}) {
+  // const store = useContext(StoreContext);
   const onError = useError();
   //   const [state, dispatch] = useReducer(reducer, initialState, (state) => ({
   //     ...state,
@@ -39,12 +37,13 @@ export default observer(function LoadData() {
   //   const { files } = state;
 
   const onDrop = async (acceptedFiles: File[]) => {
-    console.time("onDrop");
-    await store.input.loadFiles(acceptedFiles);
+    // console.time("onDrop");
+    await isoform.pdb.loadFiles(acceptedFiles);
 
-    store.input.errors.forEach((error) => onError(error));
+    isoform.pdb.errors.forEach((error) => onError(error));
+    isoform.pdb.errors = [];
 
-    console.timeEnd("onDrop");
+    // console.timeEnd("onDrop");
   };
 
   const { open, getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -62,13 +61,15 @@ export default observer(function LoadData() {
     onDrop,
   });
 
-  const showLoading = store.input.isLoadingFiles;
+  const { error } = isoform.pdb;
+  const isError = !!error;
+
   return (
-    <>
+    <FormControl isInvalid={isError}>
       <Skeleton
-        w="400px"
-        h="360px"
-        isLoaded={!showLoading}
+        w="430px"
+        // h="360px"
+        isLoaded={!isoform.pdb.isLoading}
         // rounded="md"
         border="1px dashed #ccc"
       >
@@ -86,36 +87,13 @@ export default observer(function LoadData() {
               <Text>Drop the files here ...</Text>
             ) : (
               <Text>
-                Drag and drop files here, or click to select files. <br />
-                <br /> Accepts <code>.fasta</code> and <code>.pdb</code> files,
-                or <code>.net</code> files for pre-made networks.
-                <br />
-                <br />
-                Isoform identified by filenames.
+                Drag and drop <code>.pdb</code> files here, or click to select.
               </Text>
             )}
           </Box>
         </div>
       </Skeleton>
-      {/* <Button onClick={createDiagram}>Create diagram</Button> */}
-      <Flex mt={2} justify="flex-end">
-        <Menu>
-          <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-            Load examples
-          </MenuButton>
-          <MenuList>
-            {store.input.exampleData.map((item) => (
-              <MenuItem
-                key={item.id}
-                value={item.id}
-                onClick={() => store.input.loadExample(item)}
-              >
-                {item.isoform1} vs {item.isoform2}
-              </MenuItem>
-            ))}
-          </MenuList>
-        </Menu>
-      </Flex>
-    </>
+      {/* <FormErrorMessage maxW={430}>Error: {error}</FormErrorMessage> */}
+    </FormControl>
   );
 });
