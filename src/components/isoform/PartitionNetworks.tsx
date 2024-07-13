@@ -21,6 +21,8 @@ import {
   SliderThumb,
   SliderMark,
   ButtonGroup,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 import { useContext, useId } from "react";
 import { observer } from "mobx-react";
@@ -161,6 +163,8 @@ export default observer(function PartitionNetworks() {
   const store = useContext(StoreContext);
   const accentColor = "var(--chakra-colors-blue-600)";
 
+  const { input } = store;
+
   return (
     <Flex direction="column" alignItems="center" mb={1}>
       <Box>
@@ -197,6 +201,14 @@ export default observer(function PartitionNetworks() {
         <Spacer width={20} />
         <NetworkItem isoform={store.input.isoformStore2} />
       </Flex>
+
+      {input.canGenerateAlignment && !input.haveAlignment && (
+        <Alert mt={10} maxW={400} status="warning">
+          <AlertIcon />
+          Align the sequences before partitioning them to make the structures
+          comparable.
+        </Alert>
+      )}
     </Flex>
   );
 });

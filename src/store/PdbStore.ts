@@ -290,7 +290,6 @@ export default class PdbStore {
                 if (item === undefined) {
                     throw Error(`Position ${pos} in dataset ${this.numDatasets + 1} does not exist in previous.`)
                 }
-                console.log(`Pos ${pos}: '${aa}', earlier: ${item.aa}`)
                 if (aa !== item.aa) {
                     throw Error(`Aminoacid '${aa}' in pos ${pos} in dataset ${this.numDatasets + 1} does not match '${item.aa}' in previous dataset`);
                 }

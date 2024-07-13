@@ -123,6 +123,7 @@ export default class IsoformStore {
             haveSequence: computed,
             alignedSequence: observable,
             alignmentMap: observable.ref,
+            haveAlignment: computed,
         })
     }
 
@@ -157,6 +158,10 @@ export default class IsoformStore {
         this.alignmentMap = alignmentMap;
         this.pdb.generateNetwork();
     })
+
+    get haveAlignment() {
+        return this.alignmentMap !== null;
+    }
 
 
     clear = action(() => {

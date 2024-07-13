@@ -92,6 +92,7 @@ export default class InputStore {
             networks: computed,
             alignment: computed,
             canGenerateAlignment: computed,
+            haveAlignment: computed,
             infomap: observable,
         })
         this.isoformStore1 = new IsoformStore(this, 1);
@@ -301,6 +302,10 @@ export default class InputStore {
         this.isoformStore1.setAlignmentMap(s1Map);
         this.isoformStore2.setAlignmentMap(s2Map);
     })
+
+    get haveAlignment() {
+        return this.isoforms.every(isoform => isoform.haveAlignment);
+    }
 
     generateAlluvialDiagram = action(async () => {
         if (!this.canGenerateAlluvial) {

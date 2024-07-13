@@ -8,8 +8,6 @@ export default observer(function AlignSequences({}: {}) {
   const store = useContext(StoreContext);
   const { alignment } = store.input;
 
-  console.log("Render aligned sequences:", alignment);
-
   return (
     <Flex
       className="step-heading"
@@ -21,9 +19,9 @@ export default observer(function AlignSequences({}: {}) {
 
       <Flex mt={8}>
         <Box>
-          {alignment.map((item) => (
+          {/* {alignment.map((item) => (
             <Box key={`${item.name}-id`}>{item.name}</Box>
-          ))}
+          ))} */}
           <Button
             isDisabled={!store.input.canGenerateAlignment}
             onClick={store.input.generateAlignment}
