@@ -1,8 +1,8 @@
 {
-  "name": "isoform",
+  "name": "IsoformMapper",
   "version": "0.5.0",
   "private": true,
-  "homepage": "/isoform",
+  "homepage": "/isoformmapper",
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
@@ -11,7 +11,7 @@
     "test:coverage": "vitest run --coverage --watch=false",
     "release": "standard-version",
     "predeploy": "npm run build",
-    "deploy": "rsync -avzh dist/* mapequation:/var/www/isoform"
+    "deploy": "rsync -avzh dist/* mapequation:/var/www/isoformmapper"
   },
   "eslintConfig": {
     "extends": [

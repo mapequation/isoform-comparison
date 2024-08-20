@@ -18,17 +18,18 @@ export default function Logo({ showVersion = false, long = false }) {
         </a>
         <Flex direction="column">
           <Flex alignItems="center">
-            <Text
+            <HStack
               style={{
                 fontFamily: "Philosopher, serif",
                 fontWeight: 700,
                 fontSize: "1.4em",
               }}
             >
-              <span style={{ color: brand }}>Isoform</span>
-              <span style={{ color }}> Comparison</span>
-              {long && <span style={{ color }}> Generator</span>}
-            </Text>
+              <Text color={brand}>Isoform</Text>
+              <Text ml={-2} color={color}>
+                Mapper
+              </Text>
+            </HStack>
             {showVersion && (
               <Text ml={1} color={color}>
                 {" v" + __APP_VERSION__}
