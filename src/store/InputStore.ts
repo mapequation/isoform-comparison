@@ -193,7 +193,7 @@ export default class InputStore {
     loadExampleTable = action(async () => {
         console.log(`Load exmaple table...`);
         // load a tsv file with d3
-        const data = await tsv(encodeURI(`/isoform/data/example_data.tsv`), (row: any, index: number) => {
+        const data = await tsv(encodeURI(`/isoformmapper/data/example_data.tsv`), (row: any, index: number) => {
             return {
                 id: index,
                 aliases: row.Aliases,
