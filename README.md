@@ -1,7 +1,4 @@
-# Alluvial Diagram Generator
+# Isoform comparison
 
+Comparing splicing isoforms through Alluvial diagrams
 Visualize Infomap partition differences.
-
-## Authors
-
-Anton Holmgren, Daniel Edler

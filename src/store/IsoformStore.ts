@@ -226,7 +226,7 @@ export default class IsoformStore {
             return file;
         }
 
-        const seqUrl = `/isoformmapper/data/FASTA/${name}.fasta`;
+        // const seqUrl = `/isoformmapper/data/FASTA/${name}.fasta`;
         const pdbUrls = Array.from(Array(5).keys()).map(n => `/isoformmapper/data/Alphafold_PDBs/${name}/relaxed_model_${n + 1}_pred_0.pdb`);
         // const urls = [seqUrl, ...pdbUrls];
         const urls = pdbUrls;

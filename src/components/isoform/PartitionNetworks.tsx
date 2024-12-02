@@ -35,12 +35,14 @@ import Graph from "./Graph";
 import { PdbProgress } from "./Progress";
 import NetworkInfo from "./NetworkInfo";
 import SelectButtonGroup from "../General/SelectButtonGroup";
+import pluralize from "../../utils/pluralize";
 
 const InfomapItem = observer(
   ({ isoform, pdb }: { isoform: IsoformStore; pdb?: boolean }) => {
     const id = `${isoform.isoID}`;
 
     const store = pdb ? isoform.pdb : isoform;
+    const { netFile: file } = store;
 
     const disabled = store.infomap.isRunning;
     const numTrials = store.infomapArgs.numTrials ?? 10;
@@ -96,6 +98,28 @@ const InfomapItem = observer(
             {isoform.haveModules ? "Re-run Infomap" : "Run Infomap"}
           </Button>
         </FormControl>
+        {file && (
+          <Box>
+            <Text>{humanFileSize(file.size)}</Text>
+            {file.isMultilayer && (
+              <Text>
+                {!file.isExpanded
+                  ? pluralize(file.numLayers!, "layer")
+                  : "layer " + file.layerId}
+              </Text>
+            )}
+            {file.numTopModules && (
+              <Text>{pluralize(file.numTopModules, "top module")}</Text>
+            )}
+            {file.cluLevel && <Text>level {file.cluLevel}</Text>}
+            {!file.cluLevel && file.numLevels && (
+              <Text>{pluralize(file.numLevels, "level")}</Text>
+            )}
+            {file.codelength && (
+              <Text>{file.codelength.toFixed(3) + " bits"}</Text>
+            )}
+          </Box>
+        )}
       </motion.div>
     );
   }
@@ -147,10 +171,9 @@ const NetworkItem = observer(({ isoform }: { isoform: IsoformStore }) => {
             maxLength={100}
           />
 
-          {file && file.size > 0 && <Text>{humanFileSize(file.size)}</Text>}
+          <NetworkInfo isoform={isoform} />
 
           <InfomapItem isoform={isoform} pdb />
-          <NetworkInfo isoform={isoform} />
         </Box>
 
         <PdbProgress isoform={isoform} />
