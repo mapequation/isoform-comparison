@@ -8,6 +8,7 @@ import IsoformStore from "./IsoformStore";
 import { isFasta, parseFasta } from "../utils/sequence-parser";
 import BioMSA from "biomsa";
 import { tsv } from "d3";
+import { aaCharToName } from "./PdbStore";
 
 type AcceptedFormats = "fasta" | "pdb" | "net";
 
@@ -277,17 +278,23 @@ export default class InputStore {
         const s2Map: Map<number, string> = new Map();
         let pos1 = 1;
         let pos2 = 1;
+        const getSiteName = (site: string) => {
+            if (site === '-') return '-';
+            return aaCharToName.get(site)!
+        }
         for (let i = 0; i < N; ++i) {
+            const c1 = getSiteName(s1.charAt(i));
+            const c2 = getSiteName(s2.charAt(i));
             const site = i + 1;
-            const c1 = s1.charAt(i);
-            const c2 = s2.charAt(i);
             if (c1 === c2) {
+                // Use suffix '_C' when the node is common in both networks
                 s1Map.set(pos1, `${site}_${c1}_C`);
-                s2Map.set(pos2, `${site}_${c1}_C`);
+                s2Map.set(pos2, `${site}_${c2}_C`);
                 ++pos1;
                 ++pos2;
             }
             else {
+                // Use suffix '_S' when the node only exists in a single network
                 s1Map.set(pos1, `${site}_${c1}_S`);
                 s2Map.set(pos2, `${site}_${c2}_S`);
 
@@ -311,6 +318,7 @@ export default class InputStore {
         if (!this.canGenerateAlluvial) {
             return;
         }
+        console.log("Generate alluvial with network:", this.networks)
         this.rootStore.setNetworks(this.networks);
         this.haveAlluvial = true;
     })

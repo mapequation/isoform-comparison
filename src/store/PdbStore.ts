@@ -17,6 +17,7 @@ const aaMap = new Map([
     ["ASX", "B"],
     ["GLX", "Z"]
 ]);
+export const aaCharToName = new Map([...aaMap].map(([key, value]) => [value, key]));
 
 const BLUE = "rgb(128, 160, 240)";
 const RED = "rgb(240, 21, 5)";
@@ -296,7 +297,7 @@ export default class PdbStore {
                 item.coords.push([x, y, z]);
             }
         }
-        console.log("pdb parsed data:", this.data)
+        // console.log("pdb parsed data:", this.data)
         runInAction(() => {
             this.numDatasets = this.numDatasets + 1;
             if (this.numDatasets === 1) {
@@ -325,6 +326,7 @@ export default class PdbStore {
     }
 
     updateNodes() {
+        console.log("Update nodes...");
         this.network.nodes = this.network.nodes.map((node, i) => {
             const item = this.data.get(i + 1)!;
             const [fx, fy, fz] = item.coords[this.selectedIndex];
@@ -332,7 +334,7 @@ export default class PdbStore {
                 ...node,
                 label: this.getNodeLabel(item),
                 fx, fy, fz,
-            }
+            };
         });
         return this.network.nodes;
     }
@@ -377,6 +379,7 @@ export default class PdbStore {
     })
 
     generateNetwork = action(() => {
+        console.log("[PdbStore]: generateNetwork...")
         const nodes = this.getNodes();
 
         const calcDistanceSquared = (p1: Coord, p2: Coord) => {
@@ -439,6 +442,7 @@ export default class PdbStore {
     })
 
     serializeNetwork = () => {
+        console.log("Serialize network...");
         const { nodes, links } = this.network;
 
         // const getId = links.length > 0 && typeof links[0].source !== 'string' ? ((v: { id: string }) => v.id) : (v: string) => v;
@@ -460,7 +464,8 @@ export default class PdbStore {
     }
 
     runInfomap = action(async () => {
-        console.time("PdbStore.runInfomap")
+        console.time("[PdbStore]: runInfomap")
+        console.log("[PdbStore]: runInfomap")
         if (this.infomap.isRunning) {
             return;
         }
@@ -508,6 +513,6 @@ export default class PdbStore {
             this.infomap.isRunning = false;
             this.netFile = netFile;
         })
-        console.timeEnd("PdbStore.runInfomap")
+        console.timeEnd("[PdbStore]: runInfomap")
     })
 }
