@@ -253,7 +253,7 @@ export default class PdbStore {
             filename = "loaded content"
         }
         const lines = content.split("\n");
-        const re = /^ATOM\s+\d+\s+\w+\s+(?<aa>\w+)\s+\w\s*(?<pos>\d+)\s+(?<x>-?\d+\.\d+)\s+(?<y>-?\d+\.\d+)\s+(?<z>-?\d+\.\d+)\s+/;
+        const re = /^ATOM\s+\d+\s+(?<atom>\w+)\s+(?<aa>\w+)\s+\w\s*(?<pos>\d+)\s+(?<x>-?\d+\.\d+)\s+(?<y>-?\d+\.\d+)\s+(?<z>-?\d+\.\d+)\s+/;
         for (let i = 0; i < lines.length; ++i) {
             const line = lines[i];
             if (line.substring(0, 4) !== "ATOM") {
@@ -263,6 +263,10 @@ export default class PdbStore {
             const match = re.exec(line);
             if (match === null || match.groups === undefined) {
                 throw Error(`Line ${i + 1} (${line}) of ${filename} doesn't match expected pattern.`);
+            }
+            const atom = match.groups.atom;
+            if (atom !== "CA") {
+                continue;
             }
             const aa = aaMap.get(match.groups.aa)!;
             const pos = Number(match.groups.pos)
@@ -379,7 +383,7 @@ export default class PdbStore {
     })
 
     generateNetwork = action(() => {
-        console.log("[PdbStore]: generateNetwork...")
+        console.log(`[PdbStore]: generateNetwork with threshold ${this.linkDistanceThreshold}...`)
         const nodes = this.getNodes();
 
         const calcDistanceSquared = (p1: Coord, p2: Coord) => {
