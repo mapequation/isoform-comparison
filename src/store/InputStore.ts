@@ -219,7 +219,7 @@ export default class InputStore {
             this.isoformStore2.loadExample(item.isoform2),
         ])
         console.log("Generate alignment...");
-        this.generateAlignment();
+        await this.generateAlignment();
 
         console.log("Run Infomap...");
         await this.runInfomap();
