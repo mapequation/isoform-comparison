@@ -46,7 +46,7 @@ export default observer(function LoadData() {
 
   const showLoading = store.input.isLoadingFiles;
   return (
-    <Box maxH={400} maxW={900} overflow="scroll">
+    <Box maxH={215} maxW={900} overflow="scroll">
       <InputGroup>
         <Input
           placeholder="Search..."

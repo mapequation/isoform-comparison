@@ -101,7 +101,6 @@ export default observer(function IsoformApp() {
 
       <Flex id="step4" direction="column" alignItems="center" mb={20}>
         <StepHeading step={4} title="Compare structures" />
-        <p>Explore modular differences</p>
 
         <IsoformAlluvialDiagram />
       </Flex>
