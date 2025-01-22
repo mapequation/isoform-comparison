@@ -8,9 +8,11 @@ import {
   TableContainer,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
+  chakra,
 } from "@chakra-ui/react";
 import { useContext } from "react";
 import { StoreContext } from "../../store";
@@ -30,31 +32,7 @@ export default observer(function AlignSequences({}: {}) {
     >
       <p>Load or calculate a sequence alignment of the isoforms.</p>
 
-      <Flex direction="column" mt={8} alignItems="center">
-        <TableContainer mb={2}>
-          <Table variant="simple" size="sm">
-            <Thead>
-              <Tr>
-                <Th>Sequence</Th>
-                <Th isNumeric>Size</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              <Tr>
-                <Td>Isoform 1</Td>
-                <Td isNumeric>{isoforms[0].sequence?.code.length ?? 0}</Td>
-              </Tr>
-              <Tr>
-                <Td>Isoform 2</Td>
-                <Td isNumeric>{isoforms[1].sequence?.code.length ?? 0}</Td>
-              </Tr>
-              <Tr>
-                <Td>Alignment</Td>
-                <Td isNumeric>{alignment[0].sequence.length}</Td>
-              </Tr>
-            </Tbody>
-          </Table>
-        </TableContainer>
+      <Flex direction="column" alignItems="center">
         <Button
           isDisabled={!store.input.canGenerateAlignment}
           onClick={store.input.generateAlignment}
@@ -78,6 +56,22 @@ export default observer(function AlignSequences({}: {}) {
               ))}
             </Code>
           ))}
+        </Box>
+        <Box>
+          <Text>
+            Number of amino acids in isoform 1:{" "}
+            <chakra.span fontWeight="bold">
+              {isoforms[0].sequence?.code.length ?? 0}
+            </chakra.span>
+            , isoform 2:{" "}
+            <chakra.span fontWeight="bold">
+              {isoforms[1].sequence?.code.length ?? 0}
+            </chakra.span>
+            , alignment:{" "}
+            <chakra.span fontWeight="bold">
+              {alignment[0].sequence.length ?? 0}
+            </chakra.span>
+          </Text>
         </Box>
       </Flex>
     </Flex>
