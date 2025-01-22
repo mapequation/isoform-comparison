@@ -67,7 +67,7 @@ export default observer(function LoadData({
   return (
     <FormControl isInvalid={isError}>
       <Skeleton
-        w="430px"
+        w="100%"
         // h="360px"
         isLoaded={!isoform.pdb.isLoading}
         // rounded="md"

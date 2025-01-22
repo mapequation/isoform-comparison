@@ -46,7 +46,7 @@ export default observer(function LoadData() {
 
   const showLoading = store.input.isLoadingFiles;
   return (
-    <Box maxH={215} maxW={900} overflow="scroll">
+    <Box>
       <InputGroup>
         <Input
           placeholder="Search..."
@@ -61,9 +61,8 @@ export default observer(function LoadData() {
           {`${store.input.filteredExampleData.length} / ${store.input.exampleData.length}`}
         </InputRightElement>
       </InputGroup>
-      <TableContainer>
+      <TableContainer maxH={210} overflowY="auto">
         <Table variant="simple" size="sm">
-          <TableCaption>Example data</TableCaption>
           <Thead>
             <Tr>
               {columns.map((column) => (
@@ -71,7 +70,7 @@ export default observer(function LoadData() {
               ))}
             </Tr>
           </Thead>
-          <Tbody>
+          <Tbody maxH={215} overflowY="scroll">
             {store.input.filteredExampleData.map((row) => (
               <Tr
                 key={row.id}
@@ -84,7 +83,13 @@ export default observer(function LoadData() {
                 <Td>{row.mechanism}</Td>
                 <Td>{row.time1}</Td>
                 <Td>{row.time2}</Td>
-                <Td>{row.description}</Td>
+                <Td
+                  maxW={{ base: 100, lg: 400 }}
+                  overflowX="auto"
+                  title={row.description}
+                >
+                  {row.description}
+                </Td>
               </Tr>
             ))}
           </Tbody>

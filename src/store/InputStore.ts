@@ -100,6 +100,7 @@ export default class InputStore {
         this.isoformStore2 = new IsoformStore(this, 2);
 
         this.rootStore.setSortModulesBy("nodeId");
+        this.rootStore.setHeight(500);
 
         this.loadExampleTable();
     }

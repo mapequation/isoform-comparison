@@ -41,7 +41,7 @@ export default observer(function GraphComponent({
     <Box border="1px solid #eeeeee">
       <ForceGraph
         ref={ref}
-        height={500}
+        height={350}
         width={500}
         nodeOpacity={0.9}
         linkColor="#000000"

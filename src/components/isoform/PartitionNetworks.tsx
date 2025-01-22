@@ -219,9 +219,8 @@ export default observer(function PartitionNetworks() {
         </Slider>
       </Box>
 
-      <Flex justify="space-between" mt={10}>
+      <Flex mt={10} gap="24px" justify="center" wrap="wrap">
         <NetworkItem isoform={store.input.isoformStore1} />
-        <Spacer width={20} />
         <NetworkItem isoform={store.input.isoformStore2} />
       </Flex>
 

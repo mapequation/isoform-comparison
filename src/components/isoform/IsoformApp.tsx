@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Heading, Text } from "@chakra-ui/react";
+import { Box, Container, Flex, HStack, Heading, Text } from "@chakra-ui/react";
 import { observer } from "mobx-react";
 import { useContext, useState } from "react";
 import { StoreContext } from "../../store";
@@ -27,7 +27,13 @@ export default observer(function IsoformApp() {
   });
 
   return (
-    <Flex mt="100px" direction="column" alignItems="center">
+    <Container
+      mt="100px"
+      maxW={1800}
+      display="flex"
+      flexDir="column"
+      alignItems="center"
+    >
       <Flex id="step1" direction="column" alignItems="center" mb={20}>
         <StepHeading step={1} title="Load data" active={activeStep == 1} />
 
@@ -36,10 +42,10 @@ export default observer(function IsoformApp() {
           data.
         </Text>
 
-        <HStack spacing="24px" mt={6} alignItems="start">
+        <Flex gap="24px" mt={6} wrap="wrap" justify="center">
           {[
             store.input.isoforms.map((isoformStore, i) => (
-              <Flex direction="column">
+              <Flex direction="column" maxW={{ base: 400, md: 600 }}>
                 <Heading as="h3" size="sm" mb={2} display="flex">
                   Isoform {i + 1}
                   <CheckCircleIcon
@@ -73,7 +79,7 @@ export default observer(function IsoformApp() {
               </Flex>
             )),
           ]}
-        </HStack>
+        </Flex>
 
         <Flex mt={6} direction="column" alignItems="center">
           <Heading as="h4" size="sm" mb={4}>
@@ -104,6 +110,6 @@ export default observer(function IsoformApp() {
 
         <IsoformAlluvialDiagram />
       </Flex>
-    </Flex>
+    </Container>
   );
 });

@@ -97,7 +97,7 @@ export default observer(function Diagram({
         <motion.g
           id="translate-center"
           initial={false}
-          animate={translateCenter(diagram)}
+          animate={translateCenter(diagram, { width, height })}
           transition={{ duration: 0.2, bounce: 0 }}
         >
           {diagram.children.map((network) => (
@@ -110,12 +110,24 @@ export default observer(function Diagram({
   );
 });
 
-function translateCenter({ width, height }: { width: number; height: number }) {
-  let { innerWidth, innerHeight } = window;
-  innerWidth -= drawerWidth;
+type BoxSize = {
+  width: number;
+  height: number;
+};
 
-  const x = Math.max((innerWidth - width) / 2, 100);
-  const y = Math.max((innerHeight - height) / 3, 100);
+function translateCenter(diagram: BoxSize, box: BoxSize) {
+  // let { innerWidth, innerHeight } = window;
+  // innerWidth -= drawerWidth;
+
+  // const x = Math.max((innerWidth - width) / 2, 100);
+  // const y = Math.max((innerHeight - height) / 3, 100);
+
+  // return { x, y };
+
+  const spaceX = box.width - diagram.width;
+  const spaceY = box.height - diagram.height;
+  const x = Math.max(spaceX / 2, 10);
+  const y = Math.max(spaceY / 2, 10);
 
   return { x, y };
 }

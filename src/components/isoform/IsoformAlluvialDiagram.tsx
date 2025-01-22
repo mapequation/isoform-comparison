@@ -43,7 +43,7 @@ export default observer(function IsoformAlluvialDiagram() {
       </Flex>
 
       <Flex mt={8}></Flex>
-      <Diagram width={1280} height={740} />
+      <Diagram width={900} height={500} />
     </Flex>
   );
 });
